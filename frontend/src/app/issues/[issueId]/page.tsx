@@ -48,7 +48,7 @@ export default function IssuePage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-[2rem] border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
+      <div className="rounded border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
         Loading issue...
       </div>
     );
@@ -56,7 +56,7 @@ export default function IssuePage() {
 
   if (!issue) {
     return (
-      <div className="rounded-[2rem] border border-rose-200 bg-rose-50 px-6 py-16 text-center text-sm font-medium text-rose-700">
+      <div className="rounded border border-rose-200 bg-rose-50 px-6 py-16 text-center text-sm font-medium text-rose-700">
         {error || 'Issue not found'}
       </div>
     );

@@ -1,184 +1,299 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   ArrowRightOnRectangleIcon,
-  Bars3BottomLeftIcon,
+  ChartBarSquareIcon,
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
+  Cog6ToothIcon,
   CpuChipIcon,
   FolderIcon,
-  HomeModernIcon,
+  HomeIcon,
   MagnifyingGlassIcon,
-  PlusCircleIcon,
-  RectangleGroupIcon,
-  ShieldCheckIcon,
+  QuestionMarkCircleIcon,
   Squares2X2Icon,
-  CalendarDaysIcon,
+  ViewColumnsIcon,
 } from '@heroicons/react/24/outline';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import { BrandMark } from '@/components/BrandMark';
 
 const publicRoutes = new Set(['/login', '/register']);
 
-const navItems = [
+const RAIL_STORAGE_KEY = 'zyraa.rail.collapsed';
+
+/**
+ * The hub rail, in Azure DevOps terms: a flat list of hubs, each of which can
+ * expand into the pivots it owns. A hub is selected when the route sits inside
+ * it, which is also what expands its children.
+ */
+interface Hub {
+  href: string;
+  label: string;
+  icon: typeof HomeIcon;
+  children?: { href: string; label: string }[];
+}
+
+const hubs: Hub[] = [
   {
     href: '/',
-    label: 'Dashboard',
-    description: 'Workspace pulse and recent activity',
-    icon: HomeModernIcon,
+    label: 'Overview',
+    icon: HomeIcon,
+    children: [
+      { href: '/', label: 'Summary' },
+      { href: '/dashboards', label: 'Dashboards' },
+    ],
   },
-  {
-    href: '/projects',
-    label: 'Projects',
-    description: 'Scopes, ownership, and delivery lanes',
-    icon: FolderIcon,
-  },
+  { href: '/projects', label: 'Projects', icon: FolderIcon },
   {
     href: '/boards',
     label: 'Boards',
-    description: 'Execution views across active teams',
-    icon: RectangleGroupIcon,
+    icon: ViewColumnsIcon,
+    children: [
+      { href: '/boards', label: 'Boards' },
+      { href: '/planning', label: 'Sprints' },
+      { href: '/search', label: 'Queries' },
+    ],
   },
-  {
-    href: '/search',
-    label: 'Search',
-    description: 'JQL-like issue search and saved filters',
-    icon: MagnifyingGlassIcon,
-  },
-  {
-    href: '/planning',
-    label: 'Planning',
-    description: 'Sprints, capacity, roadmaps, and Gantt views',
-    icon: CalendarDaysIcon,
-  },
-  {
-    href: '/dashboards',
-    label: 'Dashboards',
-    description: 'Shared dashboards and operational gadgets',
-    icon: Squares2X2Icon,
-  },
-  {
-    href: '/admin',
-    label: 'Admin',
-    description: 'ACLs, webhooks, templates, audit, and tasks',
-    icon: ShieldCheckIcon,
-  },
-  {
-    href: '/agents',
-    label: 'Agents',
-    description: 'Prompt-driven automation and AI workflow control',
-    icon: CpuChipIcon,
-  },
+  { href: '/analytics', label: 'Analytics', icon: ChartBarSquareIcon },
+  { href: '/agents', label: 'Agents', icon: CpuChipIcon },
+  { href: '/admin', label: 'Project settings', icon: Cog6ToothIcon },
 ];
 
-function getRouteMeta(pathname: string) {
-  if (pathname === '/') {
-    return {
-      eyebrow: 'Workspace dashboard',
-      title: 'Command center',
-      description: 'Monitor project health, jump into active boards, and keep momentum visible.',
-    };
-  }
+/** Routes that belong to a hub without having their own row in the rail. */
+const hubAliases: Record<string, string> = {
+  '/issues': '/boards',
+  '/projects': '/projects',
+};
 
-  if (pathname.startsWith('/projects/new')) {
-    return {
-      eyebrow: 'Project setup',
-      title: 'Create a new project',
-      description: 'Define the scope, naming, and structure for a new delivery space.',
-    };
+function activeHub(pathname: string): Hub | undefined {
+  for (const [prefix, href] of Object.entries(hubAliases)) {
+    if (pathname.startsWith(prefix)) {
+      const aliased = hubs.find((hub) => hub.href === href);
+      if (aliased) return aliased;
+    }
   }
+  // Longest matching href wins, so /boards/123 picks Boards over Overview.
+  return [...hubs]
+    .filter((hub) => (hub.href === '/' ? pathname === '/' : pathname.startsWith(hub.href)))
+    .sort((a, b) => b.href.length - a.href.length)[0];
+}
 
-  if (pathname.startsWith('/projects/')) {
-    return {
-      eyebrow: 'Project workspace',
-      title: 'Project details',
-      description: 'Track boards, workflow health, and what this team is shipping next.',
-    };
-  }
+/** Breadcrumb trail and page heading for the current route. */
+function routeMeta(pathname: string): { title: string; crumb: string | null } {
+  if (pathname === '/') return { title: 'Summary', crumb: 'Overview' };
+  if (pathname.startsWith('/dashboards')) return { title: 'Dashboards', crumb: 'Overview' };
+  if (pathname.startsWith('/projects/new')) return { title: 'New project', crumb: 'Projects' };
+  if (pathname.startsWith('/projects/')) return { title: 'Project', crumb: 'Projects' };
+  if (pathname.startsWith('/projects')) return { title: 'Projects', crumb: null };
+  if (pathname.startsWith('/boards/')) return { title: 'Board', crumb: 'Boards' };
+  if (pathname.startsWith('/boards')) return { title: 'Boards', crumb: null };
+  if (pathname.startsWith('/issues/')) return { title: 'Work item', crumb: 'Boards' };
+  if (pathname.startsWith('/planning')) return { title: 'Sprints', crumb: 'Boards' };
+  if (pathname.startsWith('/search')) return { title: 'Queries', crumb: 'Boards' };
+  if (pathname.startsWith('/analytics')) return { title: 'Analytics', crumb: null };
+  if (pathname.startsWith('/agents')) return { title: 'Agents', crumb: null };
+  if (pathname.startsWith('/admin')) return { title: 'Project settings', crumb: null };
+  return { title: 'ZYRAA', crumb: null };
+}
 
-  if (pathname.startsWith('/projects')) {
-    return {
-      eyebrow: 'Project directory',
-      title: 'All projects',
-      description: 'Browse, open, and create the workspaces that power your delivery flow.',
-    };
-  }
+function isSelected(pathname: string, href: string): boolean {
+  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+}
 
-  if (pathname.startsWith('/boards/')) {
-    return {
-      eyebrow: 'Delivery board',
-      title: 'Board execution',
-      description: 'Move work forward, inspect issue flow, and keep the team aligned.',
-    };
-  }
+/** The top organization bar: product, breadcrumb, search, and account. */
+function TopBar({ crumb, title, onSignOut, initial, name }: {
+  crumb: string | null;
+  title: string;
+  onSignOut: () => void;
+  initial: string;
+  name: string;
+}) {
+  return (
+    <header className="ado-header sticky top-0 z-30 flex items-center gap-3 px-3">
+      <Link href="/" className="flex shrink-0 items-center gap-2 pr-2">
+        <BrandMark compact showWordmark={false} />
+        <span className="text-[15px] font-semibold text-[color:var(--text-primary)]">ZYRAA</span>
+      </Link>
 
-  if (pathname.startsWith('/issues/')) {
-    return {
-      eyebrow: 'Issue workspace',
-      title: 'Issue details',
-      description: 'Work directly inside a single issue with full-page editing, comments, and time tracking.',
-    };
-  }
+      <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-1.5 text-[13px] md:flex">
+        <span className="text-[color:var(--text-disabled)]">/</span>
+        {crumb ? (
+          <>
+            <span className="truncate text-[color:var(--text-secondary)]">{crumb}</span>
+            <span className="text-[color:var(--text-disabled)]">/</span>
+          </>
+        ) : null}
+        <span className="truncate font-semibold">{title}</span>
+      </nav>
 
-  if (pathname.startsWith('/boards')) {
-    return {
-      eyebrow: 'Board library',
-      title: 'All boards',
-      description: 'Jump between team boards without losing context or navigation momentum.',
-    };
-  }
+      <div className="ml-auto flex items-center gap-1">
+        <label className="relative hidden sm:block">
+          <span className="sr-only">Search</span>
+          <MagnifyingGlassIcon className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--text-secondary)]" />
+          <input
+            type="search"
+            placeholder="Search"
+            className="h-8 w-44 pl-8 pr-2 text-[13px] lg:w-60"
+          />
+        </label>
 
-  if (pathname.startsWith('/search')) {
-    return {
-      eyebrow: 'Advanced search',
-      title: 'Search and filters',
-      description: 'Build JQL-like issue searches, save reusable filters, and move directly into matching work.',
-    };
-  }
+        <button className="command-button h-8 w-8 justify-center px-0" aria-label="Help">
+          <QuestionMarkCircleIcon className="h-5 w-5 text-[color:var(--text-secondary)]" />
+        </button>
 
-  if (pathname.startsWith('/planning')) {
-    return {
-      eyebrow: 'Planning room',
-      title: 'Sprints and roadmaps',
-      description: 'Shape sprint capacity, release roadmaps, and Gantt-style timelines from one planning surface.',
-    };
-  }
+        <div className="flex items-center gap-2 pl-1">
+          <span
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-[color:var(--accent)] text-[12px] font-semibold text-white"
+            title={name}
+          >
+            {initial}
+          </span>
+          <button onClick={onSignOut} className="command-button h-8 w-8 justify-center px-0" aria-label="Sign out">
+            <ArrowRightOnRectangleIcon className="h-5 w-5 text-[color:var(--text-secondary)]" />
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
 
-  if (pathname.startsWith('/dashboards')) {
-    return {
-      eyebrow: 'Dashboard studio',
-      title: 'Dashboards and gadgets',
-      description: 'Create shared dashboard views and compose operational gadgets for team visibility.',
-    };
-  }
+/** The left hub rail, collapsible down to icons. */
+function HubRail({ pathname, collapsed, onToggle }: {
+  pathname: string;
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
+  const current = activeHub(pathname);
 
-  if (pathname.startsWith('/admin')) {
-    return {
-      eyebrow: 'Admin control room',
-      title: 'Security and integrations',
-      description: 'Manage ACLs, webhooks, templates, audit events, rate limits, and background tasks.',
-    };
-  }
+  return (
+    <aside
+      className="ado-rail fixed left-0 top-[var(--header-height)] bottom-0 z-20 hidden flex-col md:flex"
+      style={{ width: collapsed ? 'var(--rail-width-collapsed)' : 'var(--rail-width)' }}
+    >
+      <nav className="flex-1 overflow-y-auto py-2" aria-label="Hubs">
+        {hubs.map((hub) => {
+          const Icon = hub.icon;
+          const selected = current?.href === hub.href;
+          const showChildren = !collapsed && selected && hub.children;
 
-  if (pathname.startsWith('/agents')) {
-    return {
-      eyebrow: 'Automation control',
-      title: 'Agent orchestration',
-      description: 'Run prompt-driven workflows for project setup, assignment, review, and notification automation.',
-    };
-  }
+          return (
+            <div key={hub.href}>
+              <Link
+                href={hub.href}
+                className="hub-item"
+                data-selected={selected && (!hub.children || collapsed)}
+                title={collapsed ? hub.label : undefined}
+              >
+                <Icon className="h-[18px] w-[18px] shrink-0 text-[color:var(--text-secondary)]" />
+                {!collapsed ? <span className="truncate">{hub.label}</span> : null}
+              </Link>
 
-  return {
-    eyebrow: 'Workspace',
-    title: 'ZYRAA',
-    description: 'Project management, issue tracking, and team coordination in one place.',
-  };
+              {showChildren
+                ? hub.children!.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      className="hub-item"
+                      data-child="true"
+                      data-selected={isSelected(pathname, child.href)}
+                    >
+                      <span className="truncate">{child.label}</span>
+                    </Link>
+                  ))
+                : null}
+            </div>
+          );
+        })}
+      </nav>
+
+      <button
+        onClick={onToggle}
+        className="hub-item shrink-0 border-t border-[color:var(--line)]"
+        aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
+      >
+        {collapsed ? (
+          <ChevronDoubleRightIcon className="h-[18px] w-[18px] text-[color:var(--text-secondary)]" />
+        ) : (
+          <>
+            <ChevronDoubleLeftIcon className="h-[18px] w-[18px] text-[color:var(--text-secondary)]" />
+            <span className="text-[13px] text-[color:var(--text-secondary)]">Collapse</span>
+          </>
+        )}
+      </button>
+    </aside>
+  );
+}
+
+/** Pivot tabs for the active hub, shown under the page title. */
+function Pivots({ pathname }: { pathname: string }) {
+  const current = activeHub(pathname);
+  if (!current?.children) return null;
+
+  return (
+    <div className="flex items-center gap-1 border-b border-[color:var(--line)] px-4 sm:px-6">
+      {current.children.map((child) => (
+        <Link key={child.href} href={child.href} className="pivot" data-selected={isSelected(pathname, child.href)}>
+          {child.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+/** A compact hub switcher for viewports too narrow for the rail. */
+function MobileHubs({ pathname }: { pathname: string }) {
+  const current = activeHub(pathname);
+  return (
+    <div className="flex gap-1 overflow-x-auto border-b border-[color:var(--line)] bg-[color:var(--nav-bg)] px-2 py-1 md:hidden">
+      {hubs.map((hub) => (
+        <Link
+          key={hub.href}
+          href={hub.href}
+          className="shrink-0 rounded-sm px-2.5 py-1.5 text-[13px]"
+          style={
+            current?.href === hub.href
+              ? { background: 'var(--surface)', fontWeight: 600, boxShadow: 'inset 0 -2px 0 var(--accent)' }
+              : { color: 'var(--text-secondary)' }
+          }
+        >
+          {hub.label}
+        </Link>
+      ))}
+    </div>
+  );
 }
 
 function ShellLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { token, user, logout, isLoading } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
+
+  // The rail state is a per-browser preference, so it lives in localStorage.
+  useEffect(() => {
+    try {
+      setCollapsed(window.localStorage.getItem(RAIL_STORAGE_KEY) === '1');
+    } catch {
+      // Storage can be unavailable; the default expanded rail is fine.
+    }
+  }, []);
+
+  const toggleRail = () => {
+    setCollapsed((previous) => {
+      const next = !previous;
+      try {
+        window.localStorage.setItem(RAIL_STORAGE_KEY, next ? '1' : '0');
+      } catch {
+        // Ignore: the preference simply will not persist.
+      }
+      return next;
+    });
+  };
+
+  const meta = useMemo(() => routeMeta(pathname), [pathname]);
 
   if (publicRoutes.has(pathname)) {
     return <>{children}</>;
@@ -186,148 +301,49 @@ function ShellLayout({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-6">
-        <div className="rounded-3xl border border-slate-200 bg-white/80 px-6 py-5 text-sm text-slate-600 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-          Loading your workspace...
-        </div>
+      <div className="flex min-h-screen items-center justify-center text-[13px] text-[color:var(--text-secondary)]">
+        Loading your workspace…
       </div>
     );
   }
-
-  const meta = getRouteMeta(pathname);
-  const userInitial = (user?.display_name || user?.username || 'Z').charAt(0).toUpperCase();
 
   if (!token) {
     return <>{children}</>;
   }
 
+  const userInitial = (user?.display_name || user?.username || 'Z').charAt(0).toUpperCase();
+  const userName = user?.display_name || user?.username || 'Workspace user';
+
   return (
-    <div className="min-h-screen text-slate-900">
-      <aside className="hidden bg-[linear-gradient(180deg,#09111f_0%,#0c1729_55%,#0b2431_100%)] text-white lg:fixed lg:inset-y-0 lg:flex lg:w-[19.5rem] lg:flex-col lg:border-r lg:border-white/8">
-        <div className="border-b border-white/8 px-6 py-7">
-          <BrandMark compact />
-          <p className="mt-4 text-sm leading-6 text-slate-300">
-            A deliberate workspace for planning, issue flow, and calm operational visibility.
-          </p>
-        </div>
+    <div className="min-h-screen">
+      <TopBar
+        crumb={meta.crumb}
+        title={meta.title}
+        onSignOut={logout}
+        initial={userInitial}
+        name={userName}
+      />
 
-        <div className="flex-1 overflow-y-auto px-4 py-6">
-          <div className="rounded-[1.75rem] border border-white/8 bg-white/5 px-4 py-4">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-cyan-200/90">
-              Navigation
-            </p>
-            <nav className="mt-4 space-y-2">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-              const Icon = item.icon;
+      <HubRail pathname={pathname} collapsed={collapsed} onToggle={toggleRail} />
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`group flex items-start gap-3 rounded-2xl px-4 py-3 transition ${
-                    isActive
-                      ? 'bg-white text-slate-950 shadow-[0_18px_35px_rgba(255,255,255,0.12)]'
-                      : 'text-slate-200 hover:bg-white/8 hover:text-white'
-                  }`}
-                >
-                  <span className={`mt-0.5 rounded-xl p-2 ${isActive ? 'bg-slate-950 text-white' : 'bg-white/10 text-cyan-200'}`}>
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold">{item.label}</span>
-                    <span className={`mt-1 block text-xs leading-5 ${isActive ? 'text-slate-500' : 'text-slate-400'}`}>
-                      {item.description}
-                    </span>
-                  </span>
-                </Link>
-              );
-            })}
-            </nav>
-          </div>
+      {/* The rail is fixed, so the content pane carries a matching left inset. */}
+      <div data-rail={collapsed ? 'collapsed' : 'expanded'}>
+        <MobileHubs pathname={pathname} />
 
-          <div className="mt-8 rounded-[1.75rem] border border-cyan-400/20 bg-[linear-gradient(160deg,rgba(14,165,233,0.18),rgba(15,23,42,0.22))] p-5 shadow-[0_24px_60px_rgba(2,132,199,0.12)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200">
-              Quick launch
-            </p>
-            <h3 className="mt-3 text-lg font-semibold text-white">Start a new workspace</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-200">
-              Create a project, shape its workflow, and move from planning into execution faster.
-            </p>
+        <div className="bg-[color:var(--surface)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-2 pt-4 sm:px-6">
+            <h1 className="app-title">{meta.title}</h1>
             <button
               onClick={() => router.push('/projects/new')}
-              className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-50"
+              className="button-primary h-8 px-3 text-[13px]"
             >
-              <PlusCircleIcon className="h-5 w-5" />
-              Create project
+              New project
             </button>
           </div>
+          <Pivots pathname={pathname} />
         </div>
 
-        <div className="border-t border-white/8 px-5 py-5">
-          <div className="flex items-center gap-3 rounded-2xl bg-white/6 px-4 py-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/12 text-sm font-semibold text-white">
-              {userInitial}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-white">
-                {user?.display_name || user?.username || 'Workspace user'}
-              </p>
-              <p className="truncate text-xs text-slate-400">{user?.email || 'Signed in to ZYRAA'}</p>
-            </div>
-            <button
-              onClick={logout}
-              className="rounded-xl p-2 text-slate-300 transition hover:bg-white/10 hover:text-white"
-              aria-label="Sign out"
-            >
-              <ArrowRightOnRectangleIcon className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      <div className="lg:pl-[19.5rem]">
-        <header className="sticky top-0 z-20 border-b border-white/70 bg-white/72 backdrop-blur-xl">
-          <div className="px-4 py-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-              <div className="flex items-start gap-3">
-                <div className="rounded-2xl bg-slate-950 p-3 text-white shadow-[0_16px_32px_rgba(15,23,42,0.16)] lg:hidden">
-                  <Bars3BottomLeftIcon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="eyebrow text-sky-600">
-                    {meta.eyebrow}
-                  </p>
-                  <h1 className="app-title mt-2 text-2xl font-semibold text-slate-950">{meta.title}</h1>
-                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{meta.description}</p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                {navItems.map((item) => {
-                  const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                        isActive
-                          ? 'button-primary text-white'
-                          : 'button-secondary text-slate-700'
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <main className="px-4 py-6 sm:px-6 lg:px-8">
-          {children}
-        </main>
+        <main className="px-4 py-4 sm:px-6">{children}</main>
       </div>
     </div>
   );

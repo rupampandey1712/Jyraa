@@ -55,8 +55,8 @@ export default function RegisterPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/70 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="relative hidden overflow-hidden bg-[#0f172a] px-10 py-12 text-white xl:flex xl:flex-col xl:justify-between">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded border border-slate-200/80 bg-white/70 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur xl:grid-cols-[1.1fr_0.9fr]">
+        <section className="relative hidden overflow-hidden bg-[#201f1e] px-10 py-12 text-white xl:flex xl:flex-col xl:justify-between">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.24),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(34,197,94,0.18),_transparent_28%)]" />
           <div className="relative">
             <BrandMark compact className="text-white" />
@@ -72,11 +72,11 @@ export default function RegisterPage() {
           </div>
 
           <div className="relative space-y-4 text-sm text-slate-200">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="rounded-sm border border-white/10 bg-white/5 p-4">
               <p className="font-semibold text-white">Track work with clarity</p>
               <p className="mt-1 text-slate-300">Boards, status columns, and issue details stay connected from day one.</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="rounded-sm border border-white/10 bg-white/5 p-4">
               <p className="font-semibold text-white">Designed for momentum</p>
               <p className="mt-1 text-slate-300">Set up your account and move straight into projects instead of wrestling the interface.</p>
             </div>
@@ -101,10 +101,10 @@ export default function RegisterPage() {
               A few details and you&apos;ll be ready to create boards, manage issues, and invite your team.
             </p>
 
-            <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-8">
+            <div className="mt-8 rounded border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-8">
               <form className="space-y-5" onSubmit={handleSubmit}>
                 {error && (
-                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
+                  <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3">
                     <p className="text-sm font-medium text-red-700">{error}</p>
                   </div>
                 )}
@@ -121,7 +121,7 @@ export default function RegisterPage() {
                       required
                       value={formData.username}
                       onChange={handleChange}
-                      className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                      className="block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
                       placeholder="Choose a username"
                     />
                   </div>
@@ -139,7 +139,7 @@ export default function RegisterPage() {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                      className="block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
                       placeholder="you@example.com"
                     />
                   </div>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
                       required
                       value={formData.display_name}
                       onChange={handleChange}
-                      className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                      className="block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
                       placeholder="How your team will see you"
                     />
                   </div>
@@ -175,7 +175,7 @@ export default function RegisterPage() {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                      className="block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
                       placeholder="Minimum 8 characters"
                     />
                   </div>
@@ -193,7 +193,7 @@ export default function RegisterPage() {
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                      className="block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
                       placeholder="Re-enter your password"
                     />
                   </div>
@@ -202,7 +202,7 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="button-primary inline-flex w-full items-center justify-center rounded-sm px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed"
                 >
                   {isLoading ? 'Creating account...' : 'Create account'}
                 </button>

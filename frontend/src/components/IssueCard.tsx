@@ -38,7 +38,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onClick }) => {
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-slate-900 text-[0.68rem] font-bold text-white shadow-[0_10px_24px_rgba(15,23,42,0.18)]">
+          <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-slate-900 text-[0.68rem] font-bold text-white shadow-[0_10px_24px_rgba(15,23,42,0.18)]">
             {getIssueTypeIcon(issue.issue_type)}
           </span>
           <div>

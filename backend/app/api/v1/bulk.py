@@ -5,6 +5,7 @@ from app.api.v1.access_control import require_project_permission
 from app.api.v1.dependencies import get_current_user
 from app.database import get_db
 from app import crud
+from app.api.v1.issues import record_field_history, snapshot_issue_fields
 from app.models import Issue, IssueStatus, User
 
 router = APIRouter(prefix="/bulk", tags=["bulk"])
@@ -34,12 +35,16 @@ def bulk_update_status(
         raise HTTPException(status_code=404, detail="Status not found")
 
     issues = _authorized_issues(db, current_user, issue_ids, "issue.update")
+    before = {issue.issue_id: snapshot_issue_fields(issue) for issue in issues}
     updated_count = 0
     for issue in issues:
         issue.status_id = status_obj.status_id
         updated_count += 1
 
     db.commit()
+    for issue in issues:
+        db.refresh(issue)
+        record_field_history(db, issue, current_user, before[issue.issue_id])
     return {"updated_count": updated_count, "message": f"Updated {updated_count} issues"}
 
 
@@ -62,12 +67,16 @@ def bulk_update_assignee(
             raise HTTPException(status_code=404, detail="Assignee not found")
 
     issues = _authorized_issues(db, current_user, issue_ids, "issue.update")
+    before = {issue.issue_id: snapshot_issue_fields(issue) for issue in issues}
     updated_count = 0
     for issue in issues:
         issue.assignee_user_id = assignee.user_id if assignee else None
         updated_count += 1
 
     db.commit()
+    for issue in issues:
+        db.refresh(issue)
+        record_field_history(db, issue, current_user, before[issue.issue_id])
     return {"updated_count": updated_count, "message": f"Updated {updated_count} issues"}
 
 

@@ -42,7 +42,7 @@ export default function ProjectsPage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-[2rem] border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
+      <div className="rounded border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
         Loading projects...
       </div>
     );
@@ -50,7 +50,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="hero-panel flex flex-col gap-4 rounded-[2rem] p-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="hero-panel flex flex-col gap-4 rounded p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="eyebrow text-sky-600">Project library</p>
           <h2 className="app-title mt-2 text-3xl font-semibold text-slate-950">Projects</h2>
@@ -58,7 +58,7 @@ export default function ProjectsPage() {
         </div>
         <button
           onClick={handleCreateProject}
-          className="button-primary inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold text-white"
+          className="button-primary inline-flex items-center justify-center rounded-sm px-4 py-3 text-sm font-semibold text-white"
         >
           <PlusIcon className="mr-2 h-5 w-5" />
           Create Project
@@ -67,14 +67,14 @@ export default function ProjectsPage() {
 
       <div>
         {projects.length === 0 ? (
-          <div className="glass-panel rounded-[2rem] border border-dashed border-slate-300 p-10 text-center">
+          <div className="glass-panel rounded border border-dashed border-slate-300 p-10 text-center">
             <h3 className="text-lg font-medium text-slate-900 mb-2">No projects yet</h3>
             <p className="text-slate-500 mb-6">
               Get started by creating your first project.
             </p>
             <button
               onClick={handleCreateProject}
-              className="button-primary inline-flex items-center rounded-2xl px-4 py-3 text-sm font-semibold text-white"
+              className="button-primary inline-flex items-center rounded-sm px-4 py-3 text-sm font-semibold text-white"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Create Project
@@ -85,7 +85,7 @@ export default function ProjectsPage() {
             {projects.map((project) => (
               <div
                 key={project.project_id}
-                className="interactive-card glass-panel cursor-pointer rounded-[1.75rem]"
+                className="interactive-card glass-panel cursor-pointer rounded"
                 onClick={() => handleProjectClick(project.project_id)}
               >
                 <div className="p-6">
@@ -105,7 +105,7 @@ export default function ProjectsPage() {
                         {project.name}
                       </h3>
                     </div>
-                    <button className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+                    <button className="rounded-sm p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
                       <PencilIcon className="h-5 w-5" />
                     </button>
                   </div>

@@ -1,15 +1,17 @@
 import { ClientComponents } from '@/app/ClientComponents';
-import { AmbientBackground } from '@/components/AmbientBackground';
-import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
-
-const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'ZYRAA',
   description: 'A project management and issue tracking system',
 };
 
+/**
+ * The type stack is Segoe UI, set in globals.css, so the portal matches Azure
+ * DevOps on Windows and falls back to the platform UI face elsewhere. No webfont
+ * is loaded: the ambient gradient backdrop it used to sit on is gone too, since
+ * ADO surfaces are flat.
+ */
 export default function RootLayout({
   children,
 }: {
@@ -17,13 +19,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={plusJakartaSans.className}>
-        <AmbientBackground />
-        <div className="relative z-10">
-          <ClientComponents>
-            {children}
-          </ClientComponents>
-        </div>
+      <body>
+        <ClientComponents>{children}</ClientComponents>
       </body>
     </html>
   );

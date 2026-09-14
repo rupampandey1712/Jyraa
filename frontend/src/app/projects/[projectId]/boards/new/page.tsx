@@ -115,7 +115,7 @@ export default function CreateBoardPage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-[2rem] border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
+      <div className="rounded border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
         Loading project...
       </div>
     );
@@ -123,7 +123,7 @@ export default function CreateBoardPage() {
 
   if (error && !project) {
     return (
-      <div className="rounded-[2rem] border border-rose-200 bg-rose-50 px-6 py-16 text-center text-sm font-medium text-rose-700">
+      <div className="rounded border border-rose-200 bg-rose-50 px-6 py-16 text-center text-sm font-medium text-rose-700">
         {error}
       </div>
     );
@@ -131,7 +131,7 @@ export default function CreateBoardPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="hero-panel rounded-[2rem] p-6 sm:p-8">
+      <div className="hero-panel rounded p-6 sm:p-8">
         <button
           onClick={() => router.push(`/projects/${projectId}`)}
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-700"
@@ -149,7 +149,7 @@ export default function CreateBoardPage() {
         </p>
 
         {error && project ? (
-          <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+          <div className="mt-6 rounded-sm border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
             {error}
           </div>
         ) : null}
@@ -165,7 +165,7 @@ export default function CreateBoardPage() {
               required
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="mt-2 block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
+              className="mt-2 block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
               placeholder="e.g. Platform Delivery Board"
             />
           </div>
@@ -179,7 +179,7 @@ export default function CreateBoardPage() {
               rows={4}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="mt-2 block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
+              className="mt-2 block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
               placeholder="Describe who uses this board and what it should make visible."
             />
           </div>
@@ -192,7 +192,7 @@ export default function CreateBoardPage() {
                   key={type}
                   type="button"
                   onClick={() => setBoardType(type)}
-                  className={`rounded-[1.5rem] border p-5 text-left transition ${
+                  className={`rounded border p-5 text-left transition ${
                     boardType === type
                       ? 'border-slate-950 bg-slate-950 text-white shadow-[0_18px_45px_rgba(15,23,42,0.18)]'
                       : 'border-slate-200 bg-slate-50 text-slate-900 hover:bg-white'
@@ -210,7 +210,7 @@ export default function CreateBoardPage() {
             <p className="mt-3 text-sm text-slate-500">{typeCopy}</p>
           </div>
 
-          <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 px-5 py-5">
+          <div className="rounded border border-slate-200 bg-slate-50 px-5 py-5">
             <p className="text-sm font-semibold text-slate-900">Default columns that will be created</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {defaultColumns[boardType].map((column) => (
@@ -227,7 +227,7 @@ export default function CreateBoardPage() {
           <button
             type="submit"
             disabled={isSaving || !name.trim()}
-            className="button-primary inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="button-primary inline-flex w-full items-center justify-center rounded-sm px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSaving ? 'Creating board...' : 'Create board'}
           </button>

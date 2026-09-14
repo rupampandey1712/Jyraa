@@ -41,8 +41,8 @@ export default function CreateProjectPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="hero-panel rounded-[2rem] p-6 sm:p-8">
-        <div className="rounded-[1.75rem] border border-white/70 bg-white/78 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+      <div className="hero-panel rounded p-6 sm:p-8">
+        <div className="rounded border border-white/70 bg-white/78 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
             <button
               onClick={() => router.back()}
               className="mb-6 inline-flex items-center text-sm text-slate-500 transition hover:text-slate-700"
@@ -58,7 +58,7 @@ export default function CreateProjectPage() {
             </p>
 
             {error && (
-              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4">
+              <div className="mb-6 rounded-sm border border-red-200 bg-red-50 p-4">
                 <p className="text-sm font-medium text-red-800">{error}</p>
               </div>
             )}
@@ -79,7 +79,7 @@ export default function CreateProjectPage() {
                     onChange={(e) => setProjectKey(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
                     onKeyUp={handleKeyUp}
                     placeholder="e.g., PROJ"
-                    className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono uppercase text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
+                    className="block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 font-mono uppercase text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
                   />
                   <p className="mt-2 text-xs text-slate-500">
                     Unique identifier for your project (uppercase letters and numbers only)
@@ -100,7 +100,7 @@ export default function CreateProjectPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter project name"
-                    className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
+                    className="block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
                   />
                 </div>
               </div>
@@ -117,7 +117,7 @@ export default function CreateProjectPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe the project"
-                    className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
+                    className="block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
                   />
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function CreateProjectPage() {
                 <button
                   type="submit"
                   disabled={isLoading || !projectKey || !name}
-                  className="button-primary flex w-full justify-center rounded-2xl px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className="button-primary flex w-full justify-center rounded-sm px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isLoading ? 'Creating project...' : 'Create Project'}
                 </button>

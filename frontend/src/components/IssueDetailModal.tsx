@@ -406,7 +406,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
-      <div className="flex max-h-[94vh] w-full max-w-7xl flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50 shadow-[0_40px_120px_rgba(15,23,42,0.28)]">
+      <div className="flex max-h-[94vh] w-full max-w-7xl flex-col overflow-hidden rounded border border-slate-200 bg-slate-50 shadow-[0_40px_120px_rgba(15,23,42,0.28)]">
         <div className="border-b border-slate-200 bg-white px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
@@ -437,7 +437,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                   type="text"
                   value={summary}
                   onChange={(event) => setSummary(event.target.value)}
-                  className="mt-4 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-2xl font-semibold text-slate-950 outline-none transition focus:border-sky-400"
+                  className="mt-4 w-full rounded-sm border border-slate-300 bg-white px-4 py-3 text-2xl font-semibold text-slate-950 outline-none transition focus:border-sky-400"
                 />
               ) : (
                 <h2 className="mt-4 text-2xl font-semibold leading-tight text-slate-950 md:text-[2rem]">
@@ -451,14 +451,14 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                 <>
                   <button
                     onClick={() => setIsEditing(false)}
-                    className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                    className="rounded-sm border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleUpdateIssue}
                     disabled={isSubmitting}
-                    className="rounded-xl bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                    className="rounded-sm bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
                   >
                     Save changes
                   </button>
@@ -466,13 +466,13 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
               ) : (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                  className="inline-flex items-center rounded-sm border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
                 >
                   <PencilIcon className="mr-2 h-4 w-4" />
                   Edit
                 </button>
               )}
-              <button onClick={onClose} className="rounded-xl border border-slate-300 bg-white p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
+              <button onClick={onClose} className="rounded-sm border border-slate-300 bg-white p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
@@ -483,12 +483,12 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
           <div className="grid gap-6 p-6 xl:grid-cols-[minmax(0,2fr)_320px]">
             <div className="space-y-6">
               {error ? (
-                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                <div className="rounded-sm border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
                   {error}
                 </div>
               ) : null}
 
-              <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+              <section className="rounded border border-slate-200 bg-white">
                 <div className="border-b border-slate-200 px-5 py-4">
                   <h3 className="text-lg font-semibold text-slate-950">Details</h3>
                 </div>
@@ -500,7 +500,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                       <input
                         value={projectKey}
                         onChange={(event) => setProjectKey(event.target.value.toUpperCase())}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                        className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                       />
                     </div>
                     <div>
@@ -508,7 +508,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                       <select
                         value={issueType}
                         onChange={(event) => setIssueType(event.target.value as Issue['issue_type'])}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                        className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                       >
                         {issueTypes.map((type) => (
                           <option key={type} value={type}>
@@ -522,7 +522,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                       <select
                         value={status}
                         onChange={(event) => setStatus(event.target.value as Issue['status'])}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                        className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                       >
                         {statuses.map((item) => (
                           <option key={item} value={item}>
@@ -536,7 +536,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                       <select
                         value={priority}
                         onChange={(event) => setPriority(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                        className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                       >
                         <option value="">None</option>
                         {priorities.map((item) => (
@@ -551,7 +551,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                       <input
                         value={componentName}
                         onChange={(event) => setComponentName(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                        className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                       />
                     </div>
                     <div>
@@ -559,7 +559,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                       <input
                         value={versionName}
                         onChange={(event) => setVersionName(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                        className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                       />
                     </div>
                     <div>
@@ -570,7 +570,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                         step="0.5"
                         value={originalEstimate}
                         onChange={(event) => setOriginalEstimate(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                        className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                       />
                     </div>
                     <div>
@@ -581,7 +581,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                         step="0.5"
                         value={remainingEstimate}
                         onChange={(event) => setRemainingEstimate(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                        className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                       />
                     </div>
                     <div className="md:col-span-2">
@@ -589,7 +589,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                       <input
                         value={labels}
                         onChange={(event) => setLabels(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                        className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                         placeholder="frontend, api, urgent"
                       />
                     </div>
@@ -599,11 +599,11 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                         <input
                           value={epicQuery}
                           onChange={(event) => handleEpicInputChange(event.target.value)}
-                          className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                          className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                           placeholder="Search epics by key or summary"
                         />
                         {epicResults.length > 0 ? (
-                          <div className="absolute z-10 mt-2 max-h-52 w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
+                          <div className="absolute z-10 mt-2 max-h-52 w-full overflow-y-auto rounded-sm border border-slate-200 bg-white shadow-lg">
                             {epicResults.map((epic) => (
                               <button
                                 key={epic.issue_id}
@@ -622,7 +622,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                             type="button"
                             onClick={handleUpdateEpic}
                             disabled={isSubmitting}
-                            className="rounded-xl bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                            className="rounded-sm bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
                           >
                             Save epic
                           </button>
@@ -630,7 +630,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                             type="button"
                             onClick={handleClearEpicSelection}
                             disabled={isSubmitting}
-                            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                            className="rounded-sm border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                           >
                             Remove epic
                           </button>
@@ -651,7 +651,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                 )}
               </section>
 
-              <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+              <section className="rounded border border-slate-200 bg-white">
                 <div className="border-b border-slate-200 px-5 py-4">
                   <h3 className="text-lg font-semibold text-slate-950">Description</h3>
                 </div>
@@ -661,7 +661,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                       value={description}
                       onChange={(event) => setDescription(event.target.value)}
                       rows={8}
-                      className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400"
+                      className="w-full rounded-sm border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400"
                     />
                   ) : description ? (
                     <div className="space-y-4 text-sm leading-7 text-slate-700">
@@ -677,7 +677,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                 </div>
               </section>
 
-              <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+              <section className="rounded border border-slate-200 bg-white">
                 <div className="border-b border-slate-200 px-5">
                   <div className="flex flex-wrap items-center gap-2">
                     <button className={tabButtonClass('details')} onClick={() => setActiveTab('details')}>
@@ -695,16 +695,16 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                 <div className="p-5">
                   {activeTab === 'details' ? (
                     <div className="grid gap-4 md:grid-cols-3">
-                      <div className="rounded-2xl bg-slate-50 px-4 py-4">
+                      <div className="rounded-sm bg-slate-50 px-4 py-4">
                         <p className="text-sm text-slate-500">Reporter</p>
                         <p className="mt-2 text-sm font-semibold text-slate-900">{currentIssue.reporter_display_name}</p>
                         <p className="mt-1 text-xs text-slate-500">@{currentIssue.reporter_username}</p>
                       </div>
-                      <div className="rounded-2xl bg-slate-50 px-4 py-4">
+                      <div className="rounded-sm bg-slate-50 px-4 py-4">
                         <p className="text-sm text-slate-500">Created</p>
                         <p className="mt-2 text-sm font-semibold text-slate-900">{formatDateTime(currentIssue.created_at)}</p>
                       </div>
-                      <div className="rounded-2xl bg-slate-50 px-4 py-4">
+                      <div className="rounded-sm bg-slate-50 px-4 py-4">
                         <p className="text-sm text-slate-500">Updated</p>
                         <p className="mt-2 text-sm font-semibold text-slate-900">{formatDateTime(currentIssue.updated_at)}</p>
                       </div>
@@ -714,12 +714,12 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                   {activeTab === 'comments' ? (
                     <div className="space-y-5">
                       {comments.length === 0 ? (
-                        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
+                        <div className="rounded-sm border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
                           No comments yet.
                         </div>
                       ) : (
                         comments.map((commentItem) => (
-                          <div key={commentItem.comment_id} className="rounded-2xl border border-slate-200 px-4 py-4">
+                          <div key={commentItem.comment_id} className="rounded-sm border border-slate-200 px-4 py-4">
                             <div className="flex items-start gap-3">
                               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-600 text-sm font-semibold text-white">
                                 {getInitials(commentItem.display_name)}
@@ -736,20 +736,20 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                         ))
                       )}
 
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="rounded-sm border border-slate-200 bg-slate-50 p-4">
                         <textarea
                           value={comment}
                           onChange={(event) => setComment(event.target.value)}
                           onKeyDown={handleKeyPress}
                           placeholder="Add a comment..."
                           rows={4}
-                          className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400"
+                          className="w-full rounded-sm border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400"
                         />
                         <div className="mt-3 flex justify-end">
                           <button
                             onClick={handleAddComment}
                             disabled={isSubmitting || !comment.trim()}
-                            className="inline-flex items-center rounded-xl bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                            className="inline-flex items-center rounded-sm bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
                           >
                             <PlusIcon className="mr-2 h-4 w-4" />
                             Add comment
@@ -761,7 +761,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
 
                   {activeTab === 'worklogs' ? (
                     <div className="space-y-5">
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="rounded-sm border border-slate-200 bg-slate-50 p-4">
                         <div className="grid gap-3 md:grid-cols-[140px_1fr]">
                           <input
                             type="number"
@@ -770,13 +770,13 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                             value={timeSpent}
                             onChange={(event) => setTimeSpent(event.target.value)}
                             placeholder="Hours"
-                            className="rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400"
+                            className="rounded-sm border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400"
                           />
                           <input
                             type="datetime-local"
                             value={startedAt}
                             onChange={(event) => setStartedAt(event.target.value)}
-                            className="rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400"
+                            className="rounded-sm border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400"
                           />
                         </div>
                         <textarea
@@ -784,13 +784,13 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                           onChange={(event) => setWorklogComment(event.target.value)}
                           rows={3}
                           placeholder="What did you work on?"
-                          className="mt-3 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400"
+                          className="mt-3 w-full rounded-sm border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400"
                         />
                         <div className="mt-3 flex justify-end">
                           <button
                             onClick={handleAddWorklog}
                             disabled={isSubmitting || !timeSpent}
-                            className="rounded-xl bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                            className="rounded-sm bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
                           >
                             Add work log
                           </button>
@@ -798,12 +798,12 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                       </div>
 
                       {worklogs.length === 0 ? (
-                        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
+                        <div className="rounded-sm border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
                           No hours logged yet.
                         </div>
                       ) : (
                         worklogs.map((entry) => (
-                          <div key={entry.worklog_id} className="rounded-2xl border border-slate-200 px-4 py-4">
+                          <div key={entry.worklog_id} className="rounded-sm border border-slate-200 px-4 py-4">
                             <div className="flex items-center justify-between gap-4">
                               <div>
                                 <p className="text-sm font-semibold text-slate-900">{entry.display_name || entry.username || 'Team member'}</p>
@@ -824,7 +824,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
             </div>
 
             <aside className="space-y-5">
-              <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+              <section className="rounded border border-slate-200 bg-white">
                 <div className="border-b border-slate-200 px-5 py-4">
                   <h3 className="text-lg font-semibold text-slate-950">People</h3>
                 </div>
@@ -836,11 +836,11 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                         <input
                           value={assigneeQuery}
                           onChange={(event) => handleAssigneeInputChange(event.target.value)}
-                          className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                          className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                           placeholder="Search by name, username, or email"
                         />
                         {assigneeResults.length > 0 ? (
-                          <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+                          <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-sm border border-slate-200 bg-white shadow-lg">
                             {assigneeResults.map((user) => (
                               <button
                                 key={user.user_id}
@@ -884,7 +884,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                 </div>
               </section>
 
-              <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+              <section className="rounded border border-slate-200 bg-white">
                 <div className="border-b border-slate-200 px-5 py-4">
                   <h3 className="text-lg font-semibold text-slate-950">Dates</h3>
                 </div>
@@ -904,7 +904,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                         type="date"
                         value={dueDate}
                         onChange={(event) => setDueDate(event.target.value)}
-                        className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
+                        className="mt-2 w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400"
                       />
                     ) : (
                       <p className="mt-1 text-sm text-slate-900">{formatDate(currentIssue.due_date)}</p>
@@ -913,7 +913,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                 </div>
               </section>
 
-              <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+              <section className="rounded border border-slate-200 bg-white">
                 <div className="border-b border-slate-200 px-5 py-4">
                   <h3 className="text-lg font-semibold text-slate-950">Time Tracking</h3>
                 </div>
@@ -948,7 +948,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({ issue, onClo
                 </div>
               </section>
 
-              <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+              <section className="rounded border border-slate-200 bg-white">
                 <div className="border-b border-slate-200 px-5 py-4">
                   <h3 className="text-lg font-semibold text-slate-950">Context</h3>
                 </div>

@@ -95,7 +95,7 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <section className="hero-panel rounded-[2rem] p-6">
+      <section className="hero-panel rounded p-6">
         <p className="eyebrow text-rose-600">Admin and integrations</p>
         <h2 className="app-title mt-2 text-3xl font-semibold text-slate-950">Control room</h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
@@ -103,70 +103,70 @@ export default function AdminPage() {
         </p>
       </section>
 
-      <section className="glass-panel rounded-[2rem] p-6">
+      <section className="glass-panel rounded p-6">
         <div className="flex flex-wrap gap-3">
-          <select value={selectedProjectId || ''} onChange={(event) => setSelectedProjectId(Number(event.target.value))} className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm">
+          <select value={selectedProjectId || ''} onChange={(event) => setSelectedProjectId(Number(event.target.value))} className="rounded-sm border border-slate-300 bg-white px-4 py-2.5 text-sm">
             {projects.map((project) => <option key={project.project_id} value={project.project_id}>{project.project_key} - {project.name}</option>)}
           </select>
-          <select value={selectedUserId || ''} onChange={(event) => setSelectedUserId(Number(event.target.value))} className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm">
+          <select value={selectedUserId || ''} onChange={(event) => setSelectedUserId(Number(event.target.value))} className="rounded-sm border border-slate-300 bg-white px-4 py-2.5 text-sm">
             {users.map((user) => <option key={user.user_id} value={user.user_id}>{user.display_name} (@{user.username})</option>)}
           </select>
         </div>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <div className="glass-panel rounded-[2rem] p-6">
+        <div className="glass-panel rounded p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="eyebrow text-sky-600">Advanced ACLs</p>
               <h3 className="mt-2 text-xl font-semibold text-slate-950">Project roles</h3>
             </div>
-            <button onClick={() => void grantMemberRole()} className="button-primary rounded-2xl px-4 py-2 text-sm font-semibold text-white">Grant member</button>
+            <button onClick={() => void grantMemberRole()} className="button-primary rounded-sm px-4 py-2 text-sm font-semibold text-white">Grant member</button>
           </div>
           <div className="mt-5 space-y-3">
             {roles.map((role) => (
-              <div key={role.role_id} className="soft-panel rounded-2xl p-4">
+              <div key={role.role_id} className="soft-panel rounded-sm p-4">
                 <p className="text-sm font-semibold text-slate-950">{role.display_name || role.username}</p>
                 <p className="mt-1 text-xs text-slate-500">{role.role_type} | {role.permissions.join(', ') || 'No explicit permissions'}</p>
               </div>
             ))}
           </div>
-          <div className="mt-5 rounded-2xl bg-slate-50 p-4">
+          <div className="mt-5 rounded-sm bg-slate-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Available permissions</p>
             <p className="mt-2 text-xs leading-6 text-slate-600">{permissions.map((permission) => permission.permission_key).join(', ')}</p>
           </div>
         </div>
 
-        <div className="glass-panel rounded-[2rem] p-6">
+        <div className="glass-panel rounded p-6">
           <p className="eyebrow text-emerald-600">Webhooks and templates</p>
           <h3 className="mt-2 text-xl font-semibold text-slate-950">Integration setup</h3>
           <div className="mt-5 space-y-4">
             <div>
               <label className="text-sm font-semibold text-slate-700">Webhook URL</label>
-              <input value={webhookUrl} onChange={(event) => setWebhookUrl(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-2.5 text-sm" />
-              <button onClick={() => void createWebhook()} className="button-secondary mt-3 rounded-2xl px-4 py-2 text-sm font-semibold">Create webhook</button>
+              <input value={webhookUrl} onChange={(event) => setWebhookUrl(event.target.value)} className="mt-2 w-full rounded-sm border border-slate-300 px-4 py-2.5 text-sm" />
+              <button onClick={() => void createWebhook()} className="button-secondary mt-3 rounded-sm px-4 py-2 text-sm font-semibold">Create webhook</button>
             </div>
             <div>
               <label className="text-sm font-semibold text-slate-700">Template name</label>
-              <input value={templateName} onChange={(event) => setTemplateName(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-2.5 text-sm" />
-              <button onClick={() => void createTemplate()} className="button-secondary mt-3 rounded-2xl px-4 py-2 text-sm font-semibold">Create bug template</button>
+              <input value={templateName} onChange={(event) => setTemplateName(event.target.value)} className="mt-2 w-full rounded-sm border border-slate-300 px-4 py-2.5 text-sm" />
+              <button onClick={() => void createTemplate()} className="button-secondary mt-3 rounded-sm px-4 py-2 text-sm font-semibold">Create bug template</button>
             </div>
           </div>
         </div>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <div className="glass-panel rounded-[2rem] p-6">
+        <div className="glass-panel rounded p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="eyebrow text-amber-600">Background tasks</p>
               <h3 className="mt-2 text-xl font-semibold text-slate-950">Email and notification queue</h3>
             </div>
-            <button onClick={() => void processTasks()} className="button-primary rounded-2xl px-4 py-2 text-sm font-semibold text-white">Process</button>
+            <button onClick={() => void processTasks()} className="button-primary rounded-sm px-4 py-2 text-sm font-semibold text-white">Process</button>
           </div>
           <div className="mt-5 space-y-3">
             {tasks.map((task) => (
-              <div key={task.task_id} className="soft-panel rounded-2xl p-4">
+              <div key={task.task_id} className="soft-panel rounded-sm p-4">
                 <p className="text-sm font-semibold text-slate-950">#{task.task_id} {task.task_type}</p>
                 <p className="mt-1 text-xs text-slate-500">{task.status} | {task.error_message || 'No error'}</p>
               </div>
@@ -174,12 +174,12 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="glass-panel rounded-[2rem] p-6">
+        <div className="glass-panel rounded p-6">
           <p className="eyebrow text-violet-600">Audit log</p>
           <h3 className="mt-2 text-xl font-semibold text-slate-950">Recent changes</h3>
           <div className="mt-5 space-y-3">
             {audit.map((event) => (
-              <div key={event.audit_id} className="soft-panel rounded-2xl p-4">
+              <div key={event.audit_id} className="soft-panel rounded-sm p-4">
                 <p className="text-sm font-semibold text-slate-950">{event.action_type} {event.entity_type}</p>
                 <p className="mt-1 text-xs text-slate-500">Entity #{event.entity_id || 'n/a'} | {event.username || 'System'} | {new Date(event.created_at).toLocaleString()}</p>
               </div>

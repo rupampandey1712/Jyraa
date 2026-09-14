@@ -240,6 +240,27 @@ export const agentAPI = {
   rejectAction: (actionId: number) => api.post(`/agents/actions/${actionId}/reject`),
 };
 
+// Analytics APIs
+export const analyticsAPI = {
+  overview: (projectId: number, days = 30) =>
+    api.get(`/analytics/projects/${projectId}/overview`, { params: { days } }),
+  cumulativeFlow: (projectId: number, days = 30) =>
+    api.get(`/analytics/projects/${projectId}/cumulative-flow`, { params: { days } }),
+  controlChart: (projectId: number, days = 90, rolling_window = 7) =>
+    api.get(`/analytics/projects/${projectId}/control-chart`, { params: { days, rolling_window } }),
+  createdVsResolved: (projectId: number, days = 60, interval: 'day' | 'week' = 'day') =>
+    api.get(`/analytics/projects/${projectId}/created-vs-resolved`, { params: { days, interval } }),
+  throughput: (projectId: number, days = 84) =>
+    api.get(`/analytics/projects/${projectId}/throughput`, { params: { days } }),
+  agingWip: (projectId: number) => api.get(`/analytics/projects/${projectId}/aging-wip`),
+  workload: (projectId: number) => api.get(`/analytics/projects/${projectId}/workload`),
+  epicProgress: (projectId: number) => api.get(`/analytics/projects/${projectId}/epic-progress`),
+  velocity: (boardId: number, limit = 8, unit: 'count' | 'hours' = 'count') =>
+    api.get(`/analytics/boards/${boardId}/velocity`, { params: { limit, unit } }),
+  burndown: (sprintId: number, unit: 'count' | 'hours' = 'count') =>
+    api.get(`/analytics/sprints/${sprintId}/burndown`, { params: { unit } }),
+};
+
 // Filter APIs
 export const filterAPI = {
   getAll: (project_id?: number) => api.get('/filters', { params: { project_id } }),

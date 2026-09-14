@@ -30,8 +30,8 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/70 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="relative hidden overflow-hidden bg-slate-950 px-10 py-12 text-white xl:flex xl:flex-col xl:justify-between">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded border border-slate-200/80 bg-white/70 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur xl:grid-cols-[1.1fr_0.9fr]">
+        <section className="relative hidden overflow-hidden bg-[#201f1e] px-10 py-12 text-white xl:flex xl:flex-col xl:justify-between">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.28),_transparent_35%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.2),_transparent_30%)]" />
           <div className="relative">
             <BrandMark compact className="text-white" />
@@ -44,11 +44,11 @@ export default function LoginPage() {
           </div>
 
           <div className="relative grid grid-cols-2 gap-4 text-sm text-slate-200">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="rounded-sm border border-white/10 bg-white/5 p-4">
               <p className="text-3xl font-semibold text-white">24</p>
               <p className="mt-1 text-slate-300">active sprints monitored</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="rounded-sm border border-white/10 bg-white/5 p-4">
               <p className="text-3xl font-semibold text-white">99.2%</p>
               <p className="mt-1 text-slate-300">workflow completion rate</p>
             </div>
@@ -73,10 +73,10 @@ export default function LoginPage() {
               Use your account to open boards, manage project health, and keep delivery on track.
             </p>
 
-            <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-8">
+            <div className="mt-8 rounded border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-8">
               <form className="space-y-5" onSubmit={handleSubmit}>
                 {error && (
-                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
+                  <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3">
                     <p className="text-sm font-medium text-red-700">{error}</p>
                   </div>
                 )}
@@ -93,7 +93,7 @@ export default function LoginPage() {
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                      className="block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
                       placeholder="Enter your username"
                     />
                   </div>
@@ -116,7 +116,7 @@ export default function LoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                      className="block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
                       placeholder="Enter your password"
                     />
                   </div>
@@ -125,7 +125,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="button-primary inline-flex w-full items-center justify-center rounded-sm px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed"
                 >
                   {isLoading ? 'Signing in...' : 'Sign in'}
                 </button>

@@ -6,26 +6,34 @@ type BrandMarkProps = {
   className?: string;
 };
 
+/**
+ * The product mark: a flat accent-filled tile with the glyph knocked out, sized
+ * like an Azure DevOps organisation icon rather than a gradient app badge.
+ */
 export function BrandMark({
   showWordmark = true,
   compact = false,
   className = '',
 }: BrandMarkProps) {
+  const size = compact ? 'h-6 w-6' : 'h-8 w-8';
+
   return (
-    <div className={`flex items-center ${compact ? 'gap-3' : 'gap-4'} ${className}`}>
-      <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-slate-950 shadow-[0_12px_30px_rgba(15,23,42,0.24)]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(45,212,191,0.75),transparent_42%),radial-gradient(circle_at_80%_75%,rgba(59,130,246,0.72),transparent_48%)]" />
+    <div className={`flex items-center ${compact ? 'gap-2' : 'gap-3'} ${className}`}>
+      <div
+        className={`flex ${size} shrink-0 items-center justify-center rounded-sm`}
+        style={{ background: 'var(--accent)' }}
+      >
         <svg
           viewBox="0 0 48 48"
           aria-hidden="true"
-          className="relative h-8 w-8 text-white"
+          className={compact ? 'h-4 w-4 text-white' : 'h-5 w-5 text-white'}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
             d="M12 12H36L20 28H32L16 40"
             stroke="currentColor"
-            strokeWidth="4.2"
+            strokeWidth="4.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -33,14 +41,12 @@ export function BrandMark({
       </div>
 
       {showWordmark ? (
-        <div className="min-w-0">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-cyan-300">
-            Work OS
-          </p>
-          <p className={`font-semibold tracking-[0.12em] text-white ${compact ? 'text-lg' : 'text-xl'}`}>
-            ZYRAA
-          </p>
-        </div>
+        <p
+          className={`font-semibold ${compact ? 'text-[15px]' : 'text-base'}`}
+          style={{ color: 'var(--text-primary)' }}
+        >
+          ZYRAA
+        </p>
       ) : null}
     </div>
   );

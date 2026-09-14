@@ -11,7 +11,8 @@ It supports project and board management, issue tracking, sprint planning, roadm
 - **Issue tracking**: Issue CRUD, issue keys, priorities, statuses, assignees, labels, components, versions, epics, comments, worklogs, and issue links.
 - **Attachments**: Upload, list, download, and delete files linked to issues.
 - **Advanced search**: JQL-like issue search plus reusable filters and saved searches.
-- **Dashboards and gadgets**: Dashboard CRUD with configurable gadget blocks.
+- **Dashboards and gadgets**: Dashboard CRUD with configurable gadget blocks, each rendering a live chart scoped to a project or board.
+- **Delivery analytics**: Burndown, velocity, cumulative flow, cycle-time control chart, created vs resolved, throughput, aging WIP, workload, and epic progress, computed from recorded status transitions.
 - **Sprint planning**: Sprint creation, issue assignment to sprints, and capacity summaries by assignee.
 - **Roadmaps and Gantt views**: Roadmap CRUD, timeline items, issue-to-roadmap linking, and Gantt-style API output.
 - **Permissions and ACLs**: Project roles, seeded permission keys, role-permission assignments, and project admin role setup on project creation.
@@ -192,6 +193,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 - `/issues/[issueId]` - issue detail, comments, worklogs, attachments, assignee, and epic link
 - `/search` - JQL-like search and saved filters
 - `/planning` - sprint capacity and roadmaps
+- `/analytics` - delivery analytics: flow, cycle time, throughput, burndown, and velocity
 - `/dashboards` - dashboard and gadget management
 - `/admin` - ACLs, webhooks, templates, audit logs, and background tasks
 - `/agents` - agent workflow controls
@@ -217,6 +219,7 @@ All versioned API routes are mounted under `/api/v1`.
 - `audit`: audit event listing
 - `tasks`: background task and email queue visibility
 - `agents`: AI/automation workflows
+- `analytics`: delivery metrics per project, board, and sprint
 
 ## Database Notes
 
@@ -239,6 +242,14 @@ The SQL Server schema lives in `database/schema.sql`. It includes the core issue
 - `email_queue`
 - `background_tasks`
 
+### Status history and analytics
+
+Analytics reads status transitions from `issue_history`. Rows are written whenever an issue's status, assignee,
+priority, or type changes through the issue API or a bulk operation. Issues that changed before history recording
+existed have no rows, so their transition times are reconstructed from `created_at` and `updated_at`; every analytics
+response reports this in a `coverage` object, and the charts label the result as estimated rather than measured.
+Coverage improves on its own as work moves through the system.
+
 For a brand-new database, the FastAPI startup flow can create ORM-managed tables with `Base.metadata.create_all`. For an existing database, apply schema changes manually or through migrations because `create_all` does not alter existing tables.
 
 ## Verification
@@ -246,6 +257,10 @@ For a brand-new database, the FastAPI startup flow can create ORM-managed tables
 The current implementation was checked with:
 
 ```powershell
+cd backend
+.\.venv\Scripts\python.exe tests\test_analytics_service.py
+.\.venv\Scripts\python.exe tests\test_issue_history_recording.py
+cd ..
 python -m compileall backend\app
 python -c "from app.main import app; print('backend app import ok')"
 python -c "import app.models; from sqlalchemy.orm import configure_mappers; configure_mappers(); print('mappers ok')"
@@ -261,6 +276,7 @@ The SQLAlchemy mapper validation may show existing overlap warnings for assignme
 ## Additional Documentation
 
 - `docs/ADVANCED_IMPLEMENTATION_CHANGES.md` - detailed record of the advanced feature implementation.
+- `docs/MCP_IMPLEMENTATION_GUIDE.md` - MCP coding, request flow, configuration, and extension guide.
 - `docs/SETUP.md` - additional setup notes.
 - `docs/BACKEND_DEBUG_SETUP.md` - backend debugging notes.
 - `docs/ZYRAA_Backend_Handbook.html` and `docs/ZYRAA_Backend_Handbook.pdf` - generated backend handbook.

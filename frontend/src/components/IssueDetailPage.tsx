@@ -391,7 +391,7 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
+      <div className="rounded border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <button
@@ -415,7 +415,7 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
             <input
               value={draft.summary}
               onChange={(event) => setDraft((current) => ({ ...current, summary: event.target.value }))}
-              className="mt-4 w-full max-w-4xl rounded-2xl border border-transparent bg-transparent px-0 py-1 text-3xl font-semibold text-slate-950 outline-none transition focus:border-slate-200 focus:bg-white focus:px-4"
+              className="mt-4 w-full max-w-4xl rounded-sm border border-transparent bg-transparent px-0 py-1 text-3xl font-semibold text-slate-950 outline-none transition focus:border-slate-200 focus:bg-white focus:px-4"
             />
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
@@ -433,7 +433,7 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
           {issue.issue_type === 'Epic' ? (
             <button
               onClick={() => setIsComposerOpen(true)}
-              className="inline-flex items-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="inline-flex items-center rounded-sm bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               <PlusIcon className="mr-2 h-5 w-5" />
               Add story
@@ -443,73 +443,73 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
       </div>
 
       {error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+        <div className="rounded-sm border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
           {error}
         </div>
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_320px]">
         <div className="space-y-6">
-          <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+          <section className="rounded border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-5 py-4">
               <h3 className="text-lg font-semibold text-slate-950">Details</h3>
             </div>
             <div className="grid gap-4 p-5 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-600">Project</label>
-                <input value={draft.projectKey} onChange={(event) => setDraft((current) => ({ ...current, projectKey: event.target.value.toUpperCase() }))} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
+                <input value={draft.projectKey} onChange={(event) => setDraft((current) => ({ ...current, projectKey: event.target.value.toUpperCase() }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-600">Issue type</label>
-                <select value={draft.issueType} onChange={(event) => setDraft((current) => ({ ...current, issueType: event.target.value as Issue['issue_type'] }))} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400">
+                <select value={draft.issueType} onChange={(event) => setDraft((current) => ({ ...current, issueType: event.target.value as Issue['issue_type'] }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400">
                   {issueTypes.map((type) => <option key={type} value={type}>{type}</option>)}
                 </select>
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-600">Status</label>
-                <select value={draft.status} onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value as Issue['status'] }))} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400">
+                <select value={draft.status} onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value as Issue['status'] }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400">
                   {statuses.map((item) => <option key={item} value={item}>{item}</option>)}
                 </select>
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-600">Priority</label>
-                <select value={draft.priority} onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value }))} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400">
+                <select value={draft.priority} onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400">
                   <option value="">None</option>
                   {priorities.map((item) => <option key={item} value={item}>{item}</option>)}
                 </select>
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-600">Component</label>
-                <input value={draft.componentName} onChange={(event) => setDraft((current) => ({ ...current, componentName: event.target.value }))} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
+                <input value={draft.componentName} onChange={(event) => setDraft((current) => ({ ...current, componentName: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-600">Fix version</label>
-                <input value={draft.versionName} onChange={(event) => setDraft((current) => ({ ...current, versionName: event.target.value }))} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
+                <input value={draft.versionName} onChange={(event) => setDraft((current) => ({ ...current, versionName: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-600">Original estimate (hours)</label>
-                <input type="number" min="0" step="0.5" value={draft.originalEstimate} onChange={(event) => setDraft((current) => ({ ...current, originalEstimate: event.target.value }))} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
+                <input type="number" min="0" step="0.5" value={draft.originalEstimate} onChange={(event) => setDraft((current) => ({ ...current, originalEstimate: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-600">Remaining estimate (hours)</label>
-                <input type="number" min="0" step="0.5" value={draft.remainingEstimate} onChange={(event) => setDraft((current) => ({ ...current, remainingEstimate: event.target.value }))} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
+                <input type="number" min="0" step="0.5" value={draft.remainingEstimate} onChange={(event) => setDraft((current) => ({ ...current, remainingEstimate: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-600">Due date</label>
-                <input type="date" value={draft.dueDate} onChange={(event) => setDraft((current) => ({ ...current, dueDate: event.target.value }))} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
+                <input type="date" value={draft.dueDate} onChange={(event) => setDraft((current) => ({ ...current, dueDate: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-600">Resolution</label>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">{issue.resolution || 'Unresolved'}</div>
+                <div className="rounded-sm border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">{issue.resolution || 'Unresolved'}</div>
               </div>
               <div className="md:col-span-2">
                 <label className="mb-2 block text-sm font-medium text-slate-600">Labels</label>
-                <input value={draft.labels} onChange={(event) => setDraft((current) => ({ ...current, labels: event.target.value }))} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" placeholder="frontend, api, urgent" />
+                <input value={draft.labels} onChange={(event) => setDraft((current) => ({ ...current, labels: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" placeholder="frontend, api, urgent" />
               </div>
             </div>
           </section>
 
-          <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+          <section className="rounded border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-5 py-4">
               <h3 className="text-lg font-semibold text-slate-950">Description</h3>
             </div>
@@ -518,13 +518,13 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
                 value={draft.description}
                 onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
                 rows={10}
-                className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400"
+                className="w-full rounded-sm border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400"
                 placeholder="Add the problem statement, scope, expected behavior, and any acceptance notes."
               />
             </div>
           </section>
 
-          <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+          <section className="rounded border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-5">
               <div className="flex flex-wrap items-center gap-2">
                 <button className={`border-b-2 px-4 py-3 text-sm font-semibold transition ${activeTab === 'details' ? 'border-jira-blue text-jira-blue' : 'border-transparent text-slate-500 hover:text-slate-700'}`} onClick={() => setActiveTab('details')}>Activity overview</button>
@@ -536,16 +536,16 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
             <div className="p-5">
               {activeTab === 'details' ? (
                 <div className="grid gap-4 md:grid-cols-3">
-                  <div className="rounded-2xl bg-slate-50 px-4 py-4"><p className="text-sm text-slate-500">Reporter</p><p className="mt-2 text-sm font-semibold text-slate-900">{issue.reporter_display_name}</p><p className="mt-1 text-xs text-slate-500">@{issue.reporter_username}</p></div>
-                  <div className="rounded-2xl bg-slate-50 px-4 py-4"><p className="text-sm text-slate-500">Created</p><p className="mt-2 text-sm font-semibold text-slate-900">{formatDateTime(issue.created_at)}</p></div>
-                  <div className="rounded-2xl bg-slate-50 px-4 py-4"><p className="text-sm text-slate-500">Updated</p><p className="mt-2 text-sm font-semibold text-slate-900">{formatDateTime(issue.updated_at)}</p></div>
+                  <div className="rounded-sm bg-slate-50 px-4 py-4"><p className="text-sm text-slate-500">Reporter</p><p className="mt-2 text-sm font-semibold text-slate-900">{issue.reporter_display_name}</p><p className="mt-1 text-xs text-slate-500">@{issue.reporter_username}</p></div>
+                  <div className="rounded-sm bg-slate-50 px-4 py-4"><p className="text-sm text-slate-500">Created</p><p className="mt-2 text-sm font-semibold text-slate-900">{formatDateTime(issue.created_at)}</p></div>
+                  <div className="rounded-sm bg-slate-50 px-4 py-4"><p className="text-sm text-slate-500">Updated</p><p className="mt-2 text-sm font-semibold text-slate-900">{formatDateTime(issue.updated_at)}</p></div>
                 </div>
               ) : null}
 
               {activeTab === 'comments' ? (
                 <div className="space-y-5">
                   {comments.map((item) => (
-                    <div key={item.comment_id} className="rounded-2xl border border-slate-200 px-4 py-4">
+                    <div key={item.comment_id} className="rounded-sm border border-slate-200 px-4 py-4">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-slate-900">{item.display_name}</p>
                         <p className="text-xs text-slate-500">{formatDateTime(item.created_at)}</p>
@@ -553,10 +553,10 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
                       <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">{item.body}</p>
                     </div>
                   ))}
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <textarea value={comment} onChange={(event) => setComment(event.target.value)} rows={4} className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400" placeholder="Add a comment..." />
+                  <div className="rounded-sm border border-slate-200 bg-slate-50 p-4">
+                    <textarea value={comment} onChange={(event) => setComment(event.target.value)} rows={4} className="w-full rounded-sm border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400" placeholder="Add a comment..." />
                     <div className="mt-3 flex justify-end">
-                      <button onClick={handleAddComment} disabled={isSubmitting || !comment.trim()} className="inline-flex items-center rounded-xl bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
+                      <button onClick={handleAddComment} disabled={isSubmitting || !comment.trim()} className="inline-flex items-center rounded-sm bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
                         <PlusIcon className="mr-2 h-4 w-4" />
                         Add comment
                       </button>
@@ -567,18 +567,18 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
 
               {activeTab === 'worklogs' ? (
                 <div className="space-y-5">
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="rounded-sm border border-slate-200 bg-slate-50 p-4">
                     <div className="grid gap-3 md:grid-cols-[140px_1fr]">
-                      <input type="number" min="0" step="0.5" value={timeSpent} onChange={(event) => setTimeSpent(event.target.value)} placeholder="Hours" className="rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400" />
-                      <input type="datetime-local" value={startedAt} onChange={(event) => setStartedAt(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400" />
+                      <input type="number" min="0" step="0.5" value={timeSpent} onChange={(event) => setTimeSpent(event.target.value)} placeholder="Hours" className="rounded-sm border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400" />
+                      <input type="datetime-local" value={startedAt} onChange={(event) => setStartedAt(event.target.value)} className="rounded-sm border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400" />
                     </div>
-                    <textarea value={worklogComment} onChange={(event) => setWorklogComment(event.target.value)} rows={3} placeholder="What did you work on?" className="mt-3 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400" />
+                    <textarea value={worklogComment} onChange={(event) => setWorklogComment(event.target.value)} rows={3} placeholder="What did you work on?" className="mt-3 w-full rounded-sm border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400" />
                     <div className="mt-3 flex justify-end">
-                      <button onClick={handleAddWorklog} disabled={isSubmitting || !timeSpent} className="rounded-xl bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">Add work log</button>
+                      <button onClick={handleAddWorklog} disabled={isSubmitting || !timeSpent} className="rounded-sm bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">Add work log</button>
                     </div>
                   </div>
                   {worklogs.map((entry) => (
-                    <div key={entry.worklog_id} className="rounded-2xl border border-slate-200 px-4 py-4">
+                    <div key={entry.worklog_id} className="rounded-sm border border-slate-200 px-4 py-4">
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <p className="text-sm font-semibold text-slate-900">{entry.display_name || entry.username || 'Team member'}</p>
@@ -594,24 +594,24 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
 
               {activeTab === 'attachments' ? (
                 <div className="space-y-5">
-                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4">
+                  <div className="rounded-sm border border-dashed border-slate-300 bg-slate-50 p-4">
                     <label className="block text-sm font-semibold text-slate-900">Upload file</label>
                     <input
                       type="file"
                       disabled={isSubmitting}
                       onChange={(event) => void handleUploadAttachment(event.target.files?.[0])}
-                      className="mt-3 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
+                      className="mt-3 block w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
                     />
                     <p className="mt-2 text-xs text-slate-500">Files are stored by the backend and linked to this issue.</p>
                   </div>
 
                   {attachments.length === 0 ? (
-                    <div className="rounded-2xl border border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
+                    <div className="rounded-sm border border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
                       No attachments yet.
                     </div>
                   ) : (
                     attachments.map((attachment) => (
-                      <div key={attachment.attachment_id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-4">
+                      <div key={attachment.attachment_id} className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-slate-200 px-4 py-4">
                         <div>
                           <p className="text-sm font-semibold text-slate-900">{attachment.filename}</p>
                           <p className="mt-1 text-xs text-slate-500">
@@ -622,14 +622,14 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
                           <button
                             type="button"
                             onClick={() => void handleDownloadAttachment(attachment)}
-                            className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                            className="rounded-sm border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                           >
                             Download
                           </button>
                           <button
                             type="button"
                             onClick={() => void handleDeleteAttachment(attachment.attachment_id)}
-                            className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                            className="rounded-sm bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                           >
                             Delete
                           </button>
@@ -644,15 +644,15 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
         </div>
 
         <aside className="space-y-5">
-          <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+          <section className="rounded border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-5 py-4"><h3 className="text-lg font-semibold text-slate-950">People</h3></div>
             <div className="space-y-4 p-5">
               <div>
                 <p className="text-sm font-medium text-slate-500">Assignee</p>
                 <div className="relative mt-2">
-                  <input value={assigneeQuery} onChange={(event) => setAssigneeQuery(event.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" placeholder="Search by name, username, or email" />
+                  <input value={assigneeQuery} onChange={(event) => setAssigneeQuery(event.target.value)} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" placeholder="Search by name, username, or email" />
                   {assigneeResults.length > 0 ? (
-                    <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+                    <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-sm border border-slate-200 bg-white shadow-lg">
                       {assigneeResults.map((user) => (
                         <button key={user.user_id} type="button" onClick={() => void handleSelectAssignee(user)} className="block w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 last:border-b-0">
                           <p className="text-sm font-semibold text-slate-900">{user.display_name}</p>
@@ -679,7 +679,7 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
             </div>
           </section>
 
-          <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+          <section className="rounded border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-5 py-4"><h3 className="text-lg font-semibold text-slate-950">Epic Link</h3></div>
             <div className="space-y-3 p-5">
               {issue.issue_type === 'Epic' ? (
@@ -687,9 +687,9 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
               ) : (
                 <>
                   <div className="relative">
-                    <input value={epicQuery} onChange={(event) => setEpicQuery(event.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" placeholder="Search epics by key or summary" />
+                    <input value={epicQuery} onChange={(event) => setEpicQuery(event.target.value)} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" placeholder="Search epics by key or summary" />
                     {epicResults.length > 0 ? (
-                      <div className="absolute z-10 mt-2 max-h-52 w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
+                      <div className="absolute z-10 mt-2 max-h-52 w-full overflow-y-auto rounded-sm border border-slate-200 bg-white shadow-lg">
                         {epicResults.map((epic) => (
                           <button key={epic.issue_id} type="button" onClick={() => void handleSelectEpic(epic)} className="block w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 last:border-b-0">
                             <p className="text-sm font-semibold text-slate-900">{epic.issue_key}</p>
@@ -712,7 +712,7 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
             </div>
           </section>
 
-          <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+          <section className="rounded border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-5 py-4"><h3 className="text-lg font-semibold text-slate-950">Dates</h3></div>
             <div className="space-y-4 p-5">
               <div><p className="text-sm font-medium text-slate-500">Created</p><p className="mt-1 text-sm text-slate-900">{formatDateTime(issue.created_at)}</p></div>
@@ -721,7 +721,7 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
             </div>
           </section>
 
-          <section className="rounded-[1.5rem] border border-slate-200 bg-white">
+          <section className="rounded border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-5 py-4"><h3 className="text-lg font-semibold text-slate-950">Time Tracking</h3></div>
             <div className="space-y-4 p-5">
               <div className="flex items-center justify-between text-sm"><span className="text-slate-500">Estimated</span><span className="font-semibold text-slate-900">{issue.original_estimate ?? 'None'}{issue.original_estimate !== undefined && issue.original_estimate !== null ? 'h' : ''}</span></div>

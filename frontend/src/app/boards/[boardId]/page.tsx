@@ -51,7 +51,7 @@ export default function BoardPage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-[2rem] border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
+      <div className="rounded border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
         Loading board...
       </div>
     );
@@ -59,7 +59,7 @@ export default function BoardPage() {
 
   if (!board || !project) {
     return (
-      <div className="rounded-[2rem] border border-rose-200 bg-rose-50 px-6 py-16 text-center text-sm font-medium text-rose-700">
+      <div className="rounded border border-rose-200 bg-rose-50 px-6 py-16 text-center text-sm font-medium text-rose-700">
         Board not found
       </div>
     );
@@ -67,7 +67,7 @@ export default function BoardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="hero-panel rounded-[2rem] p-6">
+      <div className="hero-panel rounded p-6">
         <Link
           href={`/projects/${project.project_id}`}
           className="inline-flex items-center text-sm font-medium text-slate-500 transition hover:text-slate-700"
@@ -88,7 +88,7 @@ export default function BoardPage() {
         </p>
       </div>
 
-      <div className="glass-panel h-[calc(100vh-17rem)] min-h-[42rem] rounded-[2rem] p-4 sm:p-6">
+      <div className="glass-panel h-[calc(100vh-17rem)] min-h-[42rem] rounded p-4 sm:p-6">
         <div className="h-full">
           <IssueBoard
             projectId={project.project_id}

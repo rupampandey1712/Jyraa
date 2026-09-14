@@ -110,12 +110,12 @@ export const IssueBoard: React.FC<IssueBoardProps> = ({ projectId, projectKey, b
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setIsComposerOpen(true)}
-              className="button-primary inline-flex items-center rounded-2xl px-4 py-3 text-sm font-semibold text-white"
+              className="button-primary inline-flex items-center rounded-sm px-4 py-3 text-sm font-semibold text-white"
             >
               <PlusIcon className="h-4 w-4 mr-2" />
               Create Issue
             </button>
-            <button className="rounded-2xl border border-slate-200 bg-white p-3 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700">
+            <button className="rounded-sm border border-slate-200 bg-white p-3 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700">
               <PencilIcon className="h-5 w-5" />
             </button>
           </div>

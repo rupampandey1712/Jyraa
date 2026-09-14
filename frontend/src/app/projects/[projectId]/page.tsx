@@ -113,7 +113,7 @@ export default function ProjectDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-[2rem] border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
+      <div className="rounded border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
         Loading project...
       </div>
     );
@@ -121,7 +121,7 @@ export default function ProjectDetailPage() {
 
   if (error || !project) {
     return (
-      <div className="rounded-[2rem] border border-rose-200 bg-rose-50 px-6 py-16 text-center text-sm font-medium text-rose-700">
+      <div className="rounded border border-rose-200 bg-rose-50 px-6 py-16 text-center text-sm font-medium text-rose-700">
         {error || 'Project not found'}
       </div>
     );
@@ -129,7 +129,7 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
+      <div className="rounded border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div>
             <button
@@ -154,14 +154,14 @@ export default function ProjectDetailPage() {
 
           <button
             onClick={handleCreateBoard}
-            className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="inline-flex items-center justify-center rounded-sm bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             Create Board
           </button>
           <button
             onClick={() => setIsIssueComposerOpen(true)}
-            className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex items-center justify-center rounded-sm border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             Create Issue
@@ -170,7 +170,7 @@ export default function ProjectDetailPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
+        <div className="rounded border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600">Project health</p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {[
@@ -179,7 +179,7 @@ export default function ProjectDetailPage() {
               { label: 'Completed', value: stats?.completed_issues || 0 },
               { label: 'Hours logged', value: stats?.total_time_spent || 0 },
             ].map((item) => (
-              <div key={item.label} className="rounded-2xl bg-slate-50 px-4 py-4">
+              <div key={item.label} className="rounded-sm bg-slate-50 px-4 py-4">
                 <p className="text-sm text-slate-500">{item.label}</p>
                 <p className="mt-3 text-2xl font-semibold text-slate-950">{item.value}</p>
               </div>
@@ -187,7 +187,7 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
+        <div className="rounded border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-600">Boards</p>
@@ -199,7 +199,7 @@ export default function ProjectDetailPage() {
           </div>
 
           {boards.length === 0 ? (
-            <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
+            <div className="mt-6 rounded border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
               <h4 className="text-lg font-semibold text-slate-900">No boards yet</h4>
               <p className="mt-2 text-sm text-slate-600">Create a board to turn this project into a living workflow.</p>
             </div>
@@ -209,7 +209,7 @@ export default function ProjectDetailPage() {
                 <Link
                   key={board.board_id}
                   href={`/boards/${board.board_id}`}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition hover:bg-white hover:shadow-[0_16px_36px_rgba(15,23,42,0.08)]"
+                  className="rounded-sm border border-slate-200 bg-slate-50 px-5 py-4 transition hover:bg-white hover:shadow-[0_16px_36px_rgba(15,23,42,0.08)]"
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div>
@@ -229,7 +229,7 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
+      <div className="rounded border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-600">Issue workspace</p>
@@ -241,7 +241,7 @@ export default function ProjectDetailPage() {
         </div>
 
         {issues.length === 0 ? (
-          <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
+          <div className="mt-6 rounded border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
             <h4 className="text-lg font-semibold text-slate-900">No issues yet</h4>
             <p className="mt-2 text-sm text-slate-600">
               Create your first issue here to capture the description, discuss it in comments, and log worked hours.
@@ -253,7 +253,7 @@ export default function ProjectDetailPage() {
               <button
                 key={issue.issue_id}
                 onClick={() => router.push(`/issues/${issue.issue_id}`)}
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left transition hover:bg-white hover:shadow-[0_16px_36px_rgba(15,23,42,0.08)]"
+                className="rounded-sm border border-slate-200 bg-slate-50 px-5 py-4 text-left transition hover:bg-white hover:shadow-[0_16px_36px_rgba(15,23,42,0.08)]"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>

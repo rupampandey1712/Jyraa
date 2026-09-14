@@ -38,4 +38,7 @@ class Settings(BaseSettings):
     smtp_sender_email: Optional[str] = None
     smtp_use_tls: bool = False
 
+    # Model Context Protocol (MCP)
+    mcp_api_token: Optional[str] = None
+
 settings = Settings()

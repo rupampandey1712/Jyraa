@@ -13,6 +13,7 @@ from app.models import (
     Component,
     Issue,
     IssueComment,
+    IssueHistory,
     IssueLink,
     IssuePriority,
     IssueStatus,
@@ -169,6 +170,51 @@ def queue_issue_assignment(issue: Issue) -> None:
     except Exception:
         # Notification failures should not block issue mutations.
         return
+
+
+HISTORY_FIELDS = ("status", "assignee", "priority", "issue_type")
+
+
+def snapshot_issue_fields(issue: Issue) -> dict[str, str | None]:
+    """Values of the fields tracked in issue history, captured before a mutation."""
+    return {
+        "status": issue.status_name or None,
+        "assignee": issue.assignee.username if issue.assignee else None,
+        "priority": issue.priority_name,
+        "issue_type": issue.issue_type_name or None,
+    }
+
+
+def record_field_history(db: Session, issue: Issue, user: User, before: dict[str, str | None]) -> None:
+    """Write an issue_history row for each tracked field that changed.
+
+    The status rows are what analytics reads to build cycle time, cumulative
+    flow, and burndown series, so this has to run on every path that moves an
+    issue between statuses.
+    """
+    after = snapshot_issue_fields(issue)
+    changes = [
+        (field, before.get(field), after.get(field))
+        for field in HISTORY_FIELDS
+        if before.get(field) != after.get(field)
+    ]
+    if not changes:
+        return
+    try:
+        for field, old_value, new_value in changes:
+            db.add(
+                IssueHistory(
+                    issue_id=issue.issue_id,
+                    user_id=user.user_id,
+                    field_name=field,
+                    old_value=old_value,
+                    new_value=new_value,
+                )
+            )
+        db.commit()
+    except Exception:
+        # History is observability, not a precondition for the mutation itself.
+        db.rollback()
 
 
 def write_audit(db: Session, user: User, action: str, entity: str, entity_id: int | None, values: dict | None = None) -> None:
@@ -409,6 +455,7 @@ def update_issue(
     require_project_permission(db, current_user, db_issue.project_id, "issue.update")
 
     old_assignee_user_id = db_issue.assignee_user_id
+    history_before = snapshot_issue_fields(db_issue)
     update_data = issue_update.model_dump(exclude_unset=True)
     target_project_id = db_issue.project_id
 
@@ -490,6 +537,7 @@ def update_issue(
 
     db.commit()
     db.refresh(db_issue)
+    record_field_history(db, db_issue, current_user, history_before)
     if db_issue.assignee_user_id and db_issue.assignee_user_id != old_assignee_user_id:
         queue_issue_assignment(db_issue)
     write_audit(db, current_user, "update", "issue", db_issue.issue_id, update_data)

@@ -130,13 +130,13 @@ export function IssueComposerModal({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 p-3 backdrop-blur-sm sm:p-4">
       <div className="flex min-h-full items-center justify-center">
-        <div className="flex max-h-[min(92vh,58rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
+        <div className="flex max-h-[min(92vh,58rem)] w-full max-w-2xl flex-col overflow-hidden rounded border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
           <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600">Create issue</p>
               <h3 className="mt-2 text-xl font-semibold text-slate-950 sm:text-2xl">Add work inside {projectKey}</h3>
             </div>
-            <button onClick={onClose} className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+            <button onClick={onClose} className="rounded-sm p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
               <XMarkIcon className="h-6 w-6" />
             </button>
           </div>
@@ -145,7 +145,7 @@ export function IssueComposerModal({
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
               <div className="space-y-5">
                 {error ? (
-                  <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                  <div className="rounded-sm border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
                     {error}
                   </div>
                 ) : null}
@@ -157,7 +157,7 @@ export function IssueComposerModal({
                       value={issueType}
                       onChange={(event) => setIssueType(event.target.value as NonNullable<ComposerIssueType>)}
                       disabled={!!parentEpic}
-                      className="mt-2 block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
+                      className="mt-2 block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
                     >
                       {issueTypes.map((type) => (
                         <option key={type} value={type}>
@@ -172,7 +172,7 @@ export function IssueComposerModal({
                     <select
                       value={priority}
                       onChange={(event) => setPriority(event.target.value)}
-                      className="mt-2 block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
+                      className="mt-2 block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
                     >
                       {priorities.map((item) => (
                         <option key={item} value={item}>
@@ -184,14 +184,14 @@ export function IssueComposerModal({
                 </div>
 
                 {parentEpic ? (
-                  <div className="rounded-3xl border border-violet-200 bg-violet-50/80 p-4">
+                  <div className="rounded border border-violet-200 bg-violet-50/80 p-4">
                     <p className="text-sm font-medium text-violet-900">Parent epic</p>
                     <p className="mt-2 text-sm font-semibold text-violet-800">{parentEpic.issue_key}</p>
                     <p className="mt-1 text-sm text-violet-700">{parentEpic.summary}</p>
                   </div>
                 ) : null}
 
-                <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4">
+                <div className="rounded border border-slate-200 bg-slate-50/80 p-4">
                   <div className="flex flex-col gap-4">
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -224,11 +224,11 @@ export function IssueComposerModal({
                         value={assigneeQuery}
                         onChange={(event) => handleAssigneeInputChange(event.target.value)}
                         disabled={autoAssign}
-                        className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 disabled:cursor-not-allowed disabled:bg-slate-100"
+                        className="block w-full rounded-sm border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 disabled:cursor-not-allowed disabled:bg-slate-100"
                         placeholder={autoAssign ? 'Agent will choose the best assignee' : 'Search by name, username, or email'}
                       />
                       {!autoAssign && assigneeResults.length > 0 ? (
-                        <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
+                        <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-sm border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
                           {assigneeResults.map((user) => (
                             <button
                               key={user.user_id}
@@ -263,7 +263,7 @@ export function IssueComposerModal({
                     required
                     value={summary}
                     onChange={(event) => setSummary(event.target.value)}
-                    className="mt-2 block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
+                    className="mt-2 block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
                     placeholder="Describe the issue in one clear line"
                   />
                 </div>
@@ -274,7 +274,7 @@ export function IssueComposerModal({
                     rows={6}
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
-                    className="mt-2 block min-h-[10rem] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
+                    className="mt-2 block min-h-[10rem] w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
                     placeholder="Add the problem statement, scope, expected behavior, and any acceptance notes."
                   />
                 </div>
@@ -286,7 +286,7 @@ export function IssueComposerModal({
                       type="date"
                       value={dueDate}
                       onChange={(event) => setDueDate(event.target.value)}
-                      className="mt-2 block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
+                      className="mt-2 block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
                     />
                   </div>
                   <div>
@@ -297,7 +297,7 @@ export function IssueComposerModal({
                       step="0.5"
                       value={estimate}
                       onChange={(event) => setEstimate(event.target.value)}
-                      className="mt-2 block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
+                      className="mt-2 block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
                       placeholder="e.g. 6"
                     />
                   </div>
@@ -308,7 +308,7 @@ export function IssueComposerModal({
                   <input
                     value={labels}
                     onChange={(event) => setLabels(event.target.value)}
-                    className="mt-2 block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
+                    className="mt-2 block w-full rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500"
                     placeholder="frontend, auth, urgent"
                   />
                 </div>
@@ -320,14 +320,14 @@ export function IssueComposerModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-sm border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving || !summary.trim()}
-                  className="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                  className="rounded-sm bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
                 >
                   {isSaving ? 'Creating issue...' : 'Create issue'}
                 </button>
