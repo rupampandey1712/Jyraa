@@ -11,6 +11,14 @@ It supports project and board management, issue tracking, sprint planning, roadm
 - **Issue tracking**: Issue CRUD, issue keys, priorities, statuses, assignees, labels, components, versions, epics, comments, worklogs, and issue links.
 - **Attachments**: Upload, list, download, and delete files linked to issues.
 - **Advanced search**: JQL-like issue search plus reusable filters and saved searches.
+- **Project visibility**: a project is listed only for users who lead it, hold a role in it, or have an issue in it
+  assigned to or reported by them. Any other project is reachable only through an explicit search, which returns its
+  name and key but not its contents.
+- **Time tracking**: log work against an issue with Jira's remaining-estimate options (adjust automatically, leave,
+  set to, reduce by). Logged hours accumulate on the issue and the remaining estimate burns down, floored at zero so
+  an overrun shows as time spent exceeding the original estimate.
+- **Requirements documents**: upload a PDF, Word, Markdown, text, JSON, YAML, or CSV specification and an agent
+  proposes the epics and the stories beneath them. The breakdown is edited and approved before anything is created.
 - **Dashboards and gadgets**: Dashboard CRUD with configurable gadget blocks, each rendering a live chart scoped to a project or board.
 - **Delivery analytics**: Burndown, velocity, cumulative flow, cycle-time control chart, created vs resolved, throughput, aging WIP, workload, and epic progress, computed from recorded status transitions.
 - **Sprint planning**: Sprint creation, issue assignment to sprints, and capacity summaries by assignee.
@@ -220,6 +228,8 @@ All versioned API routes are mounted under `/api/v1`.
 - `tasks`: background task and email queue visibility
 - `agents`: AI/automation workflows
 - `analytics`: delivery metrics per project, board, and sprint
+- `projects/search`: find projects outside your own list
+- `agents/documents/plan` and `agents/documents/apply`: requirements document to epics and stories
 
 ## Database Notes
 
@@ -260,6 +270,7 @@ The current implementation was checked with:
 cd backend
 .\.venv\Scripts\python.exe tests\test_analytics_service.py
 .\.venv\Scripts\python.exe tests\test_issue_history_recording.py
+.\.venv\Scripts\python.exe tests\test_workflow_rules.py
 cd ..
 python -m compileall backend\app
 python -c "from app.main import app; print('backend app import ok')"

@@ -132,6 +132,7 @@ export const projectAPI = {
   getIssues: (projectId: number, params?: { skip?: number; limit?: number; assignee_id?: number; status_id?: number; priority_id?: number }) =>
     api.get(`/projects/${projectId}/issues`, { params }),
   getStats: (projectId: number) => api.get(`/projects/${projectId}/stats`),
+  search: (q: string, limit = 20) => api.get('/projects/search', { params: { q, limit } }),
 };
 
 // Issue APIs
@@ -187,10 +188,22 @@ export const issueAPI = {
   addComment: (issueId: number, body: string) => api.post(`/issues/${issueId}/comments`, { body }),
   getComments: (issueId: number, params?: { skip?: number; limit?: number }) =>
     api.get(`/issues/${issueId}/comments`, { params }),
-  addWorklog: (issueId: number, data: { time_spent: number; comment?: string; started_at: string }) =>
+  addWorklog: (
+    issueId: number,
+    data: {
+      time_spent: number;
+      comment?: string;
+      started_at: string;
+      /** How the remaining estimate should react, mirroring Jira's log-work options. */
+      remaining_adjustment?: 'auto' | 'leave' | 'set' | 'reduce';
+      remaining_value?: number;
+    },
+  ) =>
     api.post(`/issues/${issueId}/worklogs`, data),
   getWorklogs: (issueId: number, params?: { skip?: number; limit?: number }) =>
     api.get(`/issues/${issueId}/worklogs`, { params }),
+  deleteWorklog: (issueId: number, worklogId: number) =>
+    api.delete(`/issues/${issueId}/worklogs/${worklogId}`),
   linkIssue: (issueId: number, issue_key_to: string, link_type?: string) =>
     api.post(`/issues/${issueId}/link`, { issue_key_to, link_type }),
   updateEpic: (issueId: number, epic_issue_key: string | null) =>
@@ -236,6 +249,28 @@ export const agentAPI = {
     data: { repository_url: string; branch?: string; github_token?: string; max_files?: number },
     onEvent: (event: AgentStreamEvent) => void
   ) => postStream('/agents/repository/review/stream', data, onEvent),
+  planFromDocument: (file: File, instructions?: string) => {
+    const form = new FormData();
+    form.append('file', file);
+    if (instructions) form.append('instructions', instructions);
+    return api.post('/agents/documents/plan', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  applyDocumentPlan: (data: {
+    project_key: string;
+    assignee_username?: string | null;
+    epics: {
+      summary: string;
+      description?: string;
+      stories: {
+        summary: string;
+        description?: string;
+        issue_type?: string;
+        priority?: string;
+        estimate_hours?: number | null;
+        labels?: string[];
+      }[];
+    }[];
+  }) => api.post('/agents/documents/apply', data),
   approveAction: (actionId: number) => api.post(`/agents/actions/${actionId}/approve`),
   rejectAction: (actionId: number) => api.post(`/agents/actions/${actionId}/reject`),
 };

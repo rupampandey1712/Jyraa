@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime, date
-from typing import Any, Optional, List
+from typing import Any, Literal, Optional, List
 from enum import Enum
 
 
@@ -215,7 +215,15 @@ class WorklogBase(BaseModel):
 
 
 class WorklogCreate(WorklogBase):
-    pass
+    """A work entry, plus what it should do to the remaining estimate.
+
+    Mirrors the choices Jira offers on its log-work dialog: reduce the remaining
+    estimate automatically, leave it alone, set it to a value, or reduce it by a
+    specific amount.
+    """
+
+    remaining_adjustment: Literal["auto", "leave", "set", "reduce"] = "auto"
+    remaining_value: Optional[float] = Field(default=None, ge=0)
 
 
 class WorklogUpdate(BaseModel):

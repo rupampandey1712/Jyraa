@@ -3,7 +3,9 @@ from typing import List, Optional
 from fastapi import HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import User, Project, ProjectRole, Permission
+from sqlalchemy import or_
+
+from app.models import User, Project, ProjectRole, Permission, Issue
 
 
 def has_permission(permission_key: str):
@@ -52,6 +54,13 @@ def has_admin_permissions(user: User) -> bool:
 
 
 def check_project_access(db: Session, user_id: int, project_id: int) -> bool:
+    """Whether a user may browse a project.
+
+    Access comes from any real relationship with the project: they lead it, they
+    hold a role in it, or they have work in it. Work counts because a person is
+    routinely given a single issue in a project they were never formally added
+    to, and they still have to be able to open it.
+    """
     project_roles = db.query(ProjectRole).filter(
         ProjectRole.user_id == user_id,
         ProjectRole.project_id == project_id
@@ -64,7 +73,33 @@ def check_project_access(db: Session, user_id: int, project_id: int) -> bool:
     if project and project.lead_user_id == user_id:
         return True
 
-    return False
+    has_work = db.query(Issue.issue_id).filter(
+        Issue.project_id == project_id,
+        or_(Issue.assignee_user_id == user_id, Issue.reporter_user_id == user_id),
+    ).first()
+
+    return has_work is not None
+
+
+def visible_project_ids(db: Session, user: User) -> set[int]:
+    """Projects that belong in this user's own lists, without them searching.
+
+    Everything else exists but stays out of the way until it is explicitly
+    searched for, which is how Jira keeps a large instance navigable.
+    """
+    if has_admin_permissions(user):
+        return {row[0] for row in db.query(Project.project_id).all()}
+
+    led = {row[0] for row in db.query(Project.project_id).filter(Project.lead_user_id == user.user_id).all()}
+    roles = {row[0] for row in db.query(ProjectRole.project_id).filter(ProjectRole.user_id == user.user_id).all()}
+    worked = {
+        row[0]
+        for row in db.query(Issue.project_id)
+        .filter(or_(Issue.assignee_user_id == user.user_id, Issue.reporter_user_id == user.user_id))
+        .distinct()
+        .all()
+    }
+    return led | roles | worked
 
 
 def get_user_project_role(db: Session, user_id: int, project_id: int) -> Optional[str]:

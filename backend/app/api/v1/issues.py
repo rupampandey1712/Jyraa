@@ -1,4 +1,5 @@
 import re
+from decimal import Decimal
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
@@ -6,7 +7,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload
 
 from app import crud, schemas
-from app.api.v1.access_control import require_project_permission
+from app.api.v1.access_control import require_issue_permission, require_project_permission
 from app.api.v1.dependencies import get_current_user
 from app.database import get_db
 from app.models import (
@@ -66,6 +67,7 @@ def serialize_issue(issue: Issue, recommendation: Optional[dict] = None) -> dict
         "priority": issue.priority.name if issue.priority else None,
         "status": issue.status.name if issue.status else "",
         "assignee_username": issue.assignee.username if issue.assignee else None,
+        "assignee_display_name": issue.assignee.display_name if issue.assignee else None,
         "component_name": issue.component.name if issue.component else None,
         "version_name": issue.version.name if issue.version else None,
         "original_estimate": float(issue.original_estimate) if issue.original_estimate is not None else None,
@@ -170,6 +172,51 @@ def queue_issue_assignment(issue: Issue) -> None:
     except Exception:
         # Notification failures should not block issue mutations.
         return
+
+
+def _as_decimal(value: float) -> Decimal:
+    """Numeric columns are Decimal(10, 2); round before assigning to avoid drift."""
+    return Decimal(str(round(value, 2)))
+
+
+def apply_worklog_to_issue(
+    issue: Issue,
+    *,
+    hours: float,
+    adjustment: str = "auto",
+    value: float | None = None,
+) -> None:
+    """Add logged hours to an issue and move its remaining estimate.
+
+    The four modes match Jira's log-work dialog:
+
+    ``auto``    burn the logged hours off the remaining estimate (never below zero)
+    ``leave``   record the time but keep the remaining estimate as it stands
+    ``set``     replace the remaining estimate with ``value``
+    ``reduce``  subtract ``value`` from the remaining estimate
+
+    Logging more than the estimate is allowed: the remaining estimate floors at
+    zero while time spent keeps climbing, which is what makes an overrun visible.
+    """
+    issue.time_spent = _as_decimal(float(issue.time_spent or 0) + hours)
+
+    if adjustment == "leave":
+        return
+
+    if adjustment == "set":
+        issue.remaining_estimate = _as_decimal(max(value or 0.0, 0.0))
+        return
+
+    # An issue with no remaining estimate falls back to its original estimate, so
+    # the first logged entry starts burning down from something meaningful.
+    current = issue.remaining_estimate
+    if current is None:
+        current = issue.original_estimate
+    if current is None:
+        return
+
+    reduction = hours if adjustment == "auto" else (value or 0.0)
+    issue.remaining_estimate = _as_decimal(max(float(current) - reduction, 0.0))
 
 
 HISTORY_FIELDS = ("status", "assignee", "priority", "issue_type")
@@ -452,7 +499,7 @@ def update_issue(
     db_issue = crud.issue.get(db, issue_id)
     if db_issue is None:
         raise HTTPException(status_code=404, detail="Issue not found")
-    require_project_permission(db, current_user, db_issue.project_id, "issue.update")
+    require_issue_permission(db, current_user, db_issue, "issue.update")
 
     old_assignee_user_id = db_issue.assignee_user_id
     history_before = snapshot_issue_fields(db_issue)
@@ -619,6 +666,8 @@ def create_worklog(
     if db_issue is None:
         raise HTTPException(status_code=404, detail="Issue not found")
 
+    require_issue_permission(db, current_user, db_issue, "issue.update")
+
     db_worklog = Worklog(
         issue_id=issue_id,
         user_id=current_user.user_id,
@@ -628,9 +677,53 @@ def create_worklog(
         started_at=worklog.started_at,
     )
     db.add(db_worklog)
+
+    # Logging work has to move the issue's own totals, otherwise "Logged" stays
+    # at zero and the remaining estimate never burns down.
+    apply_worklog_to_issue(
+        db_issue,
+        hours=worklog.time_spent,
+        adjustment=worklog.remaining_adjustment,
+        value=worklog.remaining_value,
+    )
+
     db.commit()
     db.refresh(db_worklog)
     return serialize_worklog(db_worklog)
+
+
+@router.delete("/{issue_id}/worklogs/{worklog_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_worklog(
+    issue_id: int,
+    worklog_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Remove a work entry and give its hours back to the issue."""
+    db_issue = crud.issue.get(db, issue_id)
+    if db_issue is None:
+        raise HTTPException(status_code=404, detail="Issue not found")
+
+    db_worklog = (
+        db.query(Worklog)
+        .filter(Worklog.worklog_id == worklog_id, Worklog.issue_id == issue_id)
+        .first()
+    )
+    if db_worklog is None:
+        raise HTTPException(status_code=404, detail="Worklog not found")
+
+    # Authors can remove their own entries; changing someone else's needs update rights.
+    if db_worklog.user_id != current_user.user_id:
+        require_issue_permission(db, current_user, db_issue, "issue.update")
+
+    hours = float(db_worklog.time_spent or 0)
+    db_issue.time_spent = _as_decimal(max(float(db_issue.time_spent or 0) - hours, 0.0))
+    if db_issue.remaining_estimate is not None:
+        db_issue.remaining_estimate = _as_decimal(float(db_issue.remaining_estimate) + hours)
+
+    db.delete(db_worklog)
+    db.commit()
+    return None
 
 
 @router.get("/{issue_id}/worklogs", response_model=List[schemas.WorklogResponse])

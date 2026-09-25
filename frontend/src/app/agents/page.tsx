@@ -9,7 +9,9 @@ import {
   SparklesIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { agentAPI, type AgentStreamEvent } from '@/lib/api';
+import { agentAPI, projectAPI, type AgentStreamEvent } from '@/lib/api';
+import { RequirementsDocumentPanel } from '@/components/RequirementsDocumentPanel';
+import { Project } from '@/types';
 
 type AgentStatus = {
   nim_available: boolean;
@@ -125,10 +127,21 @@ export default function AgentsPage() {
   const [result, setResult] = useState<any>(null);
   const [streamEvents, setStreamEvents] = useState<AgentStreamEvent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     void loadStatus();
+    void loadProjects();
   }, []);
+
+  async function loadProjects() {
+    try {
+      const response = await projectAPI.getAll();
+      setProjects(response.data as Project[]);
+    } catch {
+      setProjects([]);
+    }
+  }
 
   async function loadStatus() {
     const response = await agentAPI.getStatus();
@@ -243,6 +256,8 @@ export default function AgentsPage() {
           </button>
         </div>
       </section>
+
+      <RequirementsDocumentPanel projects={projects} />
 
       <section className="rounded border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
         <h3 className="text-lg font-semibold text-slate-950">Execute full prompt automation</h3>

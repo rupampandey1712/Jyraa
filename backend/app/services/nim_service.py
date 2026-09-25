@@ -107,6 +107,27 @@ def _messages(prompt: str, system: str) -> list[dict[str, str]]:
     return messages
 
 
+def _content_of(response) -> str:
+    """The assistant's text, wherever the model put it.
+
+    Reasoning models served through NIM can return an empty ``content`` and place
+    the answer in ``reasoning_content`` instead. Reading only ``content`` makes
+    those models look like they returned nothing.
+    """
+    content = getattr(response, "content", "") or ""
+    if isinstance(content, list):  # Some providers return content parts.
+        content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+    if content:
+        return str(content)
+
+    for bag in (getattr(response, "additional_kwargs", None), getattr(response, "response_metadata", None)):
+        if isinstance(bag, dict):
+            reasoning = bag.get("reasoning_content")
+            if reasoning:
+                return str(reasoning)
+    return ""
+
+
 async def generate_response(prompt: str, system: str) -> tuple[str, Optional[str]]:
     model = choose_best_model()
     client = _build_chat_client()
@@ -118,7 +139,7 @@ async def generate_response(prompt: str, system: str) -> tuple[str, Optional[str
 
     try:
         response = await client.ainvoke(_messages(prompt, system))
-        return str(response.content), model
+        return _content_of(response), model
     except Exception:
         return (
             "NIM model could not be reached through LangChain. Returning deterministic results only.",

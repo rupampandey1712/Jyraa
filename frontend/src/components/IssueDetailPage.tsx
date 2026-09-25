@@ -7,6 +7,17 @@ import { ArrowLeftIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Attachment, Comment, Issue, User, Worklog } from '@/types';
 import { attachmentAPI, issueAPI, userAPI } from '@/lib/api';
 import { IssueComposerModal } from '@/components/IssueComposerModal';
+import { TimeTrackingPanel } from '@/components/TimeTrackingPanel';
+import {
+  InlineDate,
+  InlineHeading,
+  InlineNumber,
+  InlineSelect,
+  InlineTags,
+  InlineText,
+  InlineTextarea,
+  ReadOnlyField,
+} from '@/components/InlineEdit';
 
 type IssueDetailPageProps = {
   initialIssue: Issue;
@@ -79,14 +90,12 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
   const [selectedAssignee, setSelectedAssignee] = useState<User | null>(null);
   const [assigneeResults, setAssigneeResults] = useState<User[]>([]);
   const [isSearchingAssignees, setIsSearchingAssignees] = useState(false);
+  const [isEditingAssignee, setIsEditingAssignee] = useState(false);
   const [epicQuery, setEpicQuery] = useState(initialIssue.epic_issue_key ? `${initialIssue.epic_issue_key} - ${initialIssue.epic_issue_summary || ''}`.trim() : '');
   const [selectedEpicKey, setSelectedEpicKey] = useState<string | null>(initialIssue.epic_issue_key || null);
   const [epicResults, setEpicResults] = useState<Issue[]>([]);
   const [isSearchingEpics, setIsSearchingEpics] = useState(false);
   const [comment, setComment] = useState('');
-  const [timeSpent, setTimeSpent] = useState('');
-  const [worklogComment, setWorklogComment] = useState('');
-  const [startedAt, setStartedAt] = useState(new Date().toISOString().slice(0, 16));
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -169,41 +178,35 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
     return () => window.clearTimeout(timer);
   }, [epicQuery, issue.issue_id, issue.issue_type, issue.project_key, selectedEpicKey]);
 
-  useEffect(() => {
-    if (syncingRef.current) return;
-    const payload = buildUpdatePayload(draft);
-    const serializedPayload = JSON.stringify(payload);
-
-    if (serializedPayload === lastSavedPayloadRef.current) {
-      return;
+  /**
+   * Save one field. Each editor calls this with just what it changed, so a
+   * failure names the field that failed and nothing else is overwritten.
+   */
+  const saveField = async (patch: Record<string, unknown>) => {
+    syncingRef.current = true;
+    setError('');
+    try {
+      const response = await issueAPI.update(issue.issue_id, patch);
+      const updatedIssue = response.data as Issue;
+      setIssue(updatedIssue);
+      setDraft(buildDraft(updatedIssue));
+      setAssigneeQuery(updatedIssue.assignee_username || '');
+      setEpicQuery(updatedIssue.epic_issue_key ? `${updatedIssue.epic_issue_key} - ${updatedIssue.epic_issue_summary || ''}`.trim() : '');
+      setSelectedEpicKey(updatedIssue.epic_issue_key || null);
+      await onIssueUpdated?.(updatedIssue);
+    } finally {
+      syncingRef.current = false;
     }
+  };
 
-    const timer = window.setTimeout(async () => {
-      setSaveState('saving');
-      setError('');
-      syncingRef.current = true;
-      try {
-        const response = await issueAPI.update(issue.issue_id, payload);
-        const updatedIssue = response.data as Issue;
-        setIssue(updatedIssue);
-        setDraft(buildDraft(updatedIssue));
-        setAssigneeQuery(updatedIssue.assignee_username || '');
-        setEpicQuery(updatedIssue.epic_issue_key ? `${updatedIssue.epic_issue_key} - ${updatedIssue.epic_issue_summary || ''}`.trim() : '');
-        setSelectedEpicKey(updatedIssue.epic_issue_key || null);
-        lastSavedPayloadRef.current = JSON.stringify(buildUpdatePayload(buildDraft(updatedIssue)));
-        setSaveState('saved');
-        await onIssueUpdated?.(updatedIssue);
-      } catch (updateError: any) {
-        console.error('Failed to update issue:', updateError);
-        setSaveState('error');
-        setError(updateError?.response?.data?.detail || 'Failed to update issue');
-      } finally {
-        syncingRef.current = false;
-      }
-    }, 650);
-
-    return () => window.clearTimeout(timer);
-  }, [draft, issue.issue_id, onIssueUpdated]);
+  /** Pull the issue and its work log back after time tracking changes. */
+  const refreshIssue = async () => {
+    const [refreshed] = await Promise.all([issueAPI.getById(issue.issue_id), fetchWorklogs()]);
+    const updatedIssue = refreshed.data as Issue;
+    setIssue(updatedIssue);
+    setDraft(buildDraft(updatedIssue));
+    await onIssueUpdated?.(updatedIssue);
+  };
 
   const fetchComments = async () => {
     try {
@@ -355,40 +358,6 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
     }
   };
 
-  const handleAddWorklog = async () => {
-    if (!timeSpent || Number(timeSpent) <= 0) return;
-    setIsSubmitting(true);
-    try {
-      await issueAPI.addWorklog(issue.issue_id, {
-        time_spent: Number(timeSpent),
-        comment: worklogComment || undefined,
-        started_at: new Date(startedAt).toISOString(),
-      });
-      setTimeSpent('');
-      setWorklogComment('');
-      setStartedAt(new Date().toISOString().slice(0, 16));
-      await fetchWorklogs();
-      const refreshed = await issueAPI.getById(issue.issue_id);
-      const updatedIssue = refreshed.data as Issue;
-      setIssue(updatedIssue);
-      setDraft(buildDraft(updatedIssue));
-      lastSavedPayloadRef.current = JSON.stringify(buildUpdatePayload(buildDraft(updatedIssue)));
-      await onIssueUpdated?.(updatedIssue);
-      setActiveTab('worklogs');
-    } catch (worklogError) {
-      console.error('Failed to add worklog:', worklogError);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const saveIndicator = useMemo(() => {
-    if (saveState === 'saving') return 'Saving changes...';
-    if (saveState === 'saved') return 'All changes saved';
-    if (saveState === 'error') return 'Save failed';
-    return 'Editing live';
-  }, [saveState]);
-
   return (
     <div className="space-y-6">
       <div className="rounded border border-slate-200 bg-white/85 p-6 shadow-[0_22px_55px_rgba(15,23,42,0.08)] backdrop-blur">
@@ -412,28 +381,20 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
               <span className="text-slate-400">/</span>
               <span className="font-semibold text-slate-700">{issue.issue_key}</span>
             </div>
-            <input
-              value={draft.summary}
-              onChange={(event) => setDraft((current) => ({ ...current, summary: event.target.value }))}
-              className="mt-4 w-full max-w-4xl rounded-sm border border-transparent bg-transparent px-0 py-1 text-3xl font-semibold text-slate-950 outline-none transition focus:border-slate-200 focus:bg-white focus:px-4"
-            />
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
-                {issue.issue_key}
-              </span>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${issue.issue_type === 'Epic' ? 'bg-violet-100 text-violet-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                {issue.issue_type}
-              </span>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${saveState === 'error' ? 'bg-rose-100 text-rose-700' : 'bg-sky-100 text-sky-700'}`}>
-                {saveIndicator}
-              </span>
+            <div className="mt-3 max-w-4xl">
+              <InlineHeading value={issue.summary} onSave={(summary) => saveField({ summary })} />
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="ado-pill">{issue.issue_key}</span>
+              <span className="ado-pill">{issue.issue_type}</span>
+              <span className="ado-pill">{issue.status}</span>
             </div>
           </div>
 
           {issue.issue_type === 'Epic' ? (
             <button
               onClick={() => setIsComposerOpen(true)}
-              className="inline-flex items-center rounded-sm bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="button-primary inline-flex h-8 items-center px-3 text-[13px]"
             >
               <PlusIcon className="mr-2 h-5 w-5" />
               Add story
@@ -450,76 +411,52 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_320px]">
         <div className="space-y-6">
-          <section className="rounded border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-5 py-4">
-              <h3 className="text-lg font-semibold text-slate-950">Details</h3>
+          <section className="glass-panel rounded">
+            <div className="border-b border-slate-200 px-5 py-3">
+              <h3 className="text-sm font-semibold text-slate-900">Details</h3>
             </div>
-            <div className="grid gap-4 p-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-600">Project</label>
-                <input value={draft.projectKey} onChange={(event) => setDraft((current) => ({ ...current, projectKey: event.target.value.toUpperCase() }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-600">Issue type</label>
-                <select value={draft.issueType} onChange={(event) => setDraft((current) => ({ ...current, issueType: event.target.value as Issue['issue_type'] }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400">
-                  {issueTypes.map((type) => <option key={type} value={type}>{type}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-600">Status</label>
-                <select value={draft.status} onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value as Issue['status'] }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400">
-                  {statuses.map((item) => <option key={item} value={item}>{item}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-600">Priority</label>
-                <select value={draft.priority} onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400">
-                  <option value="">None</option>
-                  {priorities.map((item) => <option key={item} value={item}>{item}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-600">Component</label>
-                <input value={draft.componentName} onChange={(event) => setDraft((current) => ({ ...current, componentName: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-600">Fix version</label>
-                <input value={draft.versionName} onChange={(event) => setDraft((current) => ({ ...current, versionName: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-600">Original estimate (hours)</label>
-                <input type="number" min="0" step="0.5" value={draft.originalEstimate} onChange={(event) => setDraft((current) => ({ ...current, originalEstimate: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-600">Remaining estimate (hours)</label>
-                <input type="number" min="0" step="0.5" value={draft.remainingEstimate} onChange={(event) => setDraft((current) => ({ ...current, remainingEstimate: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-600">Due date</label>
-                <input type="date" value={draft.dueDate} onChange={(event) => setDraft((current) => ({ ...current, dueDate: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-600">Resolution</label>
-                <div className="rounded-sm border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">{issue.resolution || 'Unresolved'}</div>
-              </div>
+            <div className="grid gap-x-6 gap-y-4 p-5 md:grid-cols-2">
+              <InlineText label="Project" value={draft.projectKey} onSave={(project_key) => saveField({ project_key: project_key.toUpperCase() })} />
+              <InlineSelect label="Issue type" value={issue.issue_type} options={issueTypes} onSave={(issue_type) => saveField({ issue_type })} />
+              <InlineSelect label="Status" value={issue.status} options={statuses} onSave={(status) => saveField({ status })} />
+              <InlineSelect label="Priority" value={issue.priority || ''} options={priorities} allowEmpty placeholder="None" onSave={(priority) => saveField({ priority: priority || null })} />
+              <InlineText label="Component" value={draft.componentName} onSave={(component_name) => saveField({ component_name: component_name || null })} />
+              <InlineText label="Fix version" value={draft.versionName} onSave={(version_name) => saveField({ version_name: version_name || null })} />
+              <InlineNumber
+                label="Original estimate"
+                value={issue.original_estimate ?? null}
+                suffix="h"
+                onSave={(original_estimate) => saveField({ original_estimate })}
+                hint="The baseline this issue was planned against."
+              />
+              <InlineNumber
+                label="Remaining estimate"
+                value={issue.remaining_estimate ?? null}
+                suffix="h"
+                onSave={(remaining_estimate) => saveField({ remaining_estimate })}
+                hint="Logging work moves this automatically."
+              />
+              <InlineDate label="Due date" value={draft.dueDate} onSave={(due_date) => saveField({ due_date })} />
+              <ReadOnlyField label="Resolution" hint="Set by closing the issue.">
+                {issue.resolution || 'Unresolved'}
+              </ReadOnlyField>
               <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-600">Labels</label>
-                <input value={draft.labels} onChange={(event) => setDraft((current) => ({ ...current, labels: event.target.value }))} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" placeholder="frontend, api, urgent" />
+                <InlineTags label="Labels" values={issue.label_names || []} onSave={(label_names) => saveField({ label_names })} />
               </div>
             </div>
           </section>
 
-          <section className="rounded border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-5 py-4">
-              <h3 className="text-lg font-semibold text-slate-950">Description</h3>
+          <section className="glass-panel rounded">
+            <div className="border-b border-slate-200 px-5 py-3">
+              <h3 className="text-sm font-semibold text-slate-900">Description</h3>
             </div>
             <div className="p-5">
-              <textarea
-                value={draft.description}
-                onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
+              <InlineTextarea
+                label=""
+                value={issue.description || ''}
                 rows={10}
-                className="w-full rounded-sm border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400"
-                placeholder="Add the problem statement, scope, expected behavior, and any acceptance notes."
+                placeholder="Add the problem statement, scope, expected behaviour, and any acceptance notes."
+                onSave={(description) => saveField({ description })}
               />
             </div>
           </section>
@@ -566,17 +503,14 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
               ) : null}
 
               {activeTab === 'worklogs' ? (
-                <div className="space-y-5">
-                  <div className="rounded-sm border border-slate-200 bg-slate-50 p-4">
-                    <div className="grid gap-3 md:grid-cols-[140px_1fr]">
-                      <input type="number" min="0" step="0.5" value={timeSpent} onChange={(event) => setTimeSpent(event.target.value)} placeholder="Hours" className="rounded-sm border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400" />
-                      <input type="datetime-local" value={startedAt} onChange={(event) => setStartedAt(event.target.value)} className="rounded-sm border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400" />
-                    </div>
-                    <textarea value={worklogComment} onChange={(event) => setWorklogComment(event.target.value)} rows={3} placeholder="What did you work on?" className="mt-3 w-full rounded-sm border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400" />
-                    <div className="mt-3 flex justify-end">
-                      <button onClick={handleAddWorklog} disabled={isSubmitting || !timeSpent} className="rounded-sm bg-jira-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">Add work log</button>
-                    </div>
-                  </div>
+                <div className="space-y-4">
+                  {/* Logging happens in the Time tracking panel, which also shows
+                      what each entry does to the remaining estimate. */}
+                  <p className="text-xs text-slate-500">
+                    {worklogs.length === 0
+                      ? 'No work logged yet. Use “Log work” in the Time tracking panel.'
+                      : `${worklogs.length} ${worklogs.length === 1 ? 'entry' : 'entries'}, ${issue.time_spent}h logged in total.`}
+                  </p>
                   {worklogs.map((entry) => (
                     <div key={entry.worklog_id} className="rounded-sm border border-slate-200 px-4 py-4">
                       <div className="flex items-center justify-between gap-4">
@@ -648,28 +582,67 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
             <div className="border-b border-slate-200 px-5 py-4"><h3 className="text-lg font-semibold text-slate-950">People</h3></div>
             <div className="space-y-4 p-5">
               <div>
-                <p className="text-sm font-medium text-slate-500">Assignee</p>
-                <div className="relative mt-2">
-                  <input value={assigneeQuery} onChange={(event) => setAssigneeQuery(event.target.value)} className="w-full rounded-sm border border-slate-300 px-3 py-2 outline-none transition focus:border-sky-400" placeholder="Search by name, username, or email" />
-                  {assigneeResults.length > 0 ? (
-                    <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-sm border border-slate-200 bg-white shadow-lg">
-                      {assigneeResults.map((user) => (
-                        <button key={user.user_id} type="button" onClick={() => void handleSelectAssignee(user)} className="block w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 last:border-b-0">
-                          <p className="text-sm font-semibold text-slate-900">{user.display_name}</p>
-                          <p className="text-xs text-slate-500">@{user.username} - {user.email}</p>
+                <p className="mb-1 text-xs font-semibold text-slate-600">Assignee</p>
+                {isEditingAssignee ? (
+                  <div className="relative">
+                    <input
+                      autoFocus
+                      value={assigneeQuery}
+                      onChange={(event) => setAssigneeQuery(event.target.value)}
+                      onKeyDown={(event) => { if (event.key === 'Escape') setIsEditingAssignee(false); }}
+                      className="w-full rounded-sm border border-slate-300 px-2 py-1.5 text-sm"
+                      placeholder="Search by name, username, or email"
+                    />
+                    {assigneeResults.length > 0 ? (
+                      <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-sm border border-slate-200 bg-white shadow-md">
+                        {assigneeResults.map((user) => (
+                          <button
+                            key={user.user_id}
+                            type="button"
+                            onClick={async () => { await handleSelectAssignee(user); setIsEditingAssignee(false); }}
+                            className="block w-full border-b border-slate-100 px-3 py-2 text-left transition last:border-b-0 hover:bg-slate-50"
+                          >
+                            <p className="text-sm font-medium text-slate-900">{user.display_name}</p>
+                            <p className="text-xs text-slate-500">@{user.username} · {user.email}</p>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      {isSearchingAssignees ? <span className="text-xs text-slate-500">Searching…</span> : null}
+                      <button type="button" onClick={() => setIsEditingAssignee(false)} className="button-secondary h-7 px-2.5 text-xs">
+                        Cancel
+                      </button>
+                      {(issue.assignee_name || issue.assignee_username) ? (
+                        <button
+                          type="button"
+                          onClick={async () => { await handleClearAssignee(); setIsEditingAssignee(false); }}
+                          className="text-xs font-medium text-rose-600 hover:text-rose-700"
+                        >
+                          Unassign
                         </button>
-                      ))}
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
-                <div className="mt-2 flex flex-wrap items-center gap-3">
-                  {isSearchingAssignees ? <p className="text-xs text-slate-500">Searching team members...</p> : null}
-                  {(issue.assignee_name || issue.assignee_username) ? (
-                    <button type="button" onClick={() => void handleClearAssignee()} className="text-xs font-medium text-rose-600 hover:text-rose-700">
-                      Clear assignee
-                    </button>
-                  ) : null}
-                </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingAssignee(true)}
+                    aria-label="Edit assignee"
+                    className={`w-full rounded-sm border border-transparent px-2 py-1.5 text-left text-sm transition hover:border-slate-300 hover:bg-slate-50 ${
+                      issue.assignee_username ? 'text-slate-900' : 'text-slate-400'
+                    }`}
+                  >
+                    {issue.assignee_username ? (
+                      <>
+                        <span className="block font-medium">{issue.assignee_display_name || issue.assignee_name || issue.assignee_username}</span>
+                        <span className="block text-xs text-slate-500">@{issue.assignee_username}</span>
+                      </>
+                    ) : (
+                      'Unassigned'
+                    )}
+                  </button>
+                )}
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-500">Reporter</p>
@@ -721,14 +694,7 @@ export function IssueDetailPage({ initialIssue, onIssueUpdated }: IssueDetailPag
             </div>
           </section>
 
-          <section className="rounded border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-5 py-4"><h3 className="text-lg font-semibold text-slate-950">Time Tracking</h3></div>
-            <div className="space-y-4 p-5">
-              <div className="flex items-center justify-between text-sm"><span className="text-slate-500">Estimated</span><span className="font-semibold text-slate-900">{issue.original_estimate ?? 'None'}{issue.original_estimate !== undefined && issue.original_estimate !== null ? 'h' : ''}</span></div>
-              <div className="flex items-center justify-between text-sm"><span className="text-slate-500">Remaining</span><span className="font-semibold text-slate-900">{issue.remaining_estimate ?? 'None'}{issue.remaining_estimate !== undefined && issue.remaining_estimate !== null ? 'h' : ''}</span></div>
-              <div className="flex items-center justify-between text-sm"><span className="text-slate-500">Logged</span><span className="font-semibold text-slate-900">{issue.time_spent}h</span></div>
-            </div>
-          </section>
+          <TimeTrackingPanel issue={issue} worklogs={worklogs} onChanged={refreshIssue} />
         </aside>
       </div>
 

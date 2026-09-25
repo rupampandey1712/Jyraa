@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from typing import Any, Awaitable, Callable
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -24,6 +24,7 @@ from app.services.email_service import email_is_configured
 from app.services.langchain_service import langchain_available
 from app.services.nim_service import choose_best_model, get_available_models, nim_is_configured
 from app.services.code_analyzer import review_repository_from_github
+from app.services import document_service
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 
@@ -254,6 +255,128 @@ async def review_repository_stream(
             "Assembling the final report",
         ],
     )
+
+
+class DocumentStory(BaseModel):
+    summary: str = Field(min_length=1, max_length=200)
+    description: str = ""
+    issue_type: str = "Story"
+    priority: str = "Medium"
+    estimate_hours: float | None = None
+    labels: list[str] = Field(default_factory=list)
+
+
+class DocumentEpic(BaseModel):
+    summary: str = Field(min_length=1, max_length=200)
+    description: str = ""
+    stories: list[DocumentStory] = Field(default_factory=list)
+
+
+class ApplyDocumentPlanRequest(BaseModel):
+    project_key: str = Field(min_length=1, max_length=20)
+    epics: list[DocumentEpic]
+    assignee_username: str | None = None
+
+
+@router.post("/documents/plan")
+async def plan_from_document(
+    file: UploadFile = File(...),
+    instructions: str | None = Form(default=None),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """Read a requirements document and propose epics with their stories.
+
+    This only reads: nothing is created until the plan comes back through
+    ``/documents/apply``, so the requester edits the breakdown first.
+    """
+    data = await file.read()
+    try:
+        text = document_service.extract_text(file.filename or "", data)
+        plan = await document_service.plan_from_document(text, extra_context=instructions)
+    except document_service.DocumentError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    plan["filename"] = file.filename
+    plan["characters"] = len(text)
+    return plan
+
+
+@router.post("/documents/apply")
+def apply_document_plan(
+    payload: ApplyDocumentPlanRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """Create the reviewed epics and their stories, linking each story to its epic."""
+    from app.api.v1.access_control import require_project_permission
+    from app.api.v1.issues import generate_issue_key, replace_parent_epic_link
+    from app.models import Issue, IssuePriority, IssueStatus, IssueType, Project
+
+    project = db.query(Project).filter(Project.project_key == payload.project_key).first()
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    require_project_permission(db, current_user, project.project_id, "issue.create")
+
+    assignee_id = None
+    if payload.assignee_username:
+        assignee = db.query(User).filter(User.username == payload.assignee_username).first()
+        if assignee is None:
+            raise HTTPException(status_code=404, detail="Assignee not found")
+        assignee_id = assignee.user_id
+
+    default_status = db.query(IssueStatus).order_by(IssueStatus.sort_order).first()
+    if default_status is None:
+        raise HTTPException(status_code=500, detail="No issue statuses are configured")
+
+    type_ids = {issue_type.name: issue_type.issue_type_id for issue_type in db.query(IssueType).all()}
+    priority_ids = {priority.name: priority.priority_id for priority in db.query(IssuePriority).all()}
+    if "Epic" not in type_ids:
+        raise HTTPException(status_code=500, detail="The 'Epic' issue type is not configured")
+
+    def new_issue(summary: str, description: str, type_name: str, priority_name: str | None, estimate: float | None) -> Issue:
+        issue = Issue(
+            issue_key=generate_issue_key(db, project.project_key, project.project_id),
+            project_id=project.project_id,
+            issue_type_id=type_ids.get(type_name, type_ids.get("Story", type_ids["Epic"])),
+            summary=summary[:500],
+            description=description or None,
+            status_id=default_status.status_id,
+            priority_id=priority_ids.get(priority_name or "", None),
+            reporter_user_id=current_user.user_id,
+            assignee_user_id=assignee_id,
+            original_estimate=estimate,
+            remaining_estimate=estimate,
+        )
+        db.add(issue)
+        db.flush()  # Assign the id so the next key increments and links can be made.
+        return issue
+
+    created: list[dict] = []
+    for epic_plan in payload.epics:
+        epic = new_issue(epic_plan.summary, epic_plan.description, "Epic", None, None)
+        stories = []
+        for story_plan in epic_plan.stories:
+            story = new_issue(
+                story_plan.summary,
+                story_plan.description,
+                story_plan.issue_type,
+                story_plan.priority,
+                story_plan.estimate_hours,
+            )
+            replace_parent_epic_link(db, story, epic)
+            stories.append({"issue_id": story.issue_id, "issue_key": story.issue_key, "summary": story.summary})
+        created.append({
+            "epic": {"issue_id": epic.issue_id, "issue_key": epic.issue_key, "summary": epic.summary},
+            "stories": stories,
+        })
+
+    db.commit()
+    return {
+        "project_key": project.project_key,
+        "created": created,
+        "epic_count": len(created),
+        "story_count": sum(len(entry["stories"]) for entry in created),
+    }
 
 
 @router.post("/actions/{action_id}/approve")

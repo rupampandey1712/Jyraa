@@ -1,136 +1,199 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { projectAPI } from '@/lib/api';
-import { ArrowRightIcon, PencilIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { ArrowRightIcon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Project } from '@/types';
 import { useAuth } from '@/lib/auth-context';
+
+/** A project found by searching, which may be one the user is not part of. */
+interface SearchResult {
+  project_id: number;
+  project_key: string;
+  name: string;
+  description: string | null;
+  is_member: boolean;
+}
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<SearchResult[] | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
   const { token } = useAuth();
+
+  const fetchProjects = useCallback(async () => {
+    try {
+      const response = await projectAPI.getAll();
+      setProjects(response.data as Project[]);
+    } catch (caught) {
+      const detail = caught as { response?: { data?: { detail?: string } } };
+      setError(detail.response?.data?.detail || 'Could not load your projects.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!token) {
       router.push('/login');
       return;
     }
-    fetchProjects();
-  }, [token, router]);
+    void fetchProjects();
+  }, [token, router, fetchProjects]);
 
-  const fetchProjects = async () => {
-    try {
-      const response = await projectAPI.getAll();
-      setProjects(response.data);
-    } catch (error) {
-      console.error('Failed to fetch projects:', error);
-    } finally {
-      setIsLoading(false);
+  // Searching is the deliberate act that surfaces projects nobody assigned you to.
+  useEffect(() => {
+    const term = query.trim();
+    if (term.length < 2) {
+      setResults(null);
+      setIsSearching(false);
+      return;
     }
-  };
 
-  const handleProjectClick = (projectId: number) => {
-    router.push(`/projects/${projectId}`);
-  };
+    const timer = window.setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const response = await projectAPI.search(term);
+        setResults(response.data as SearchResult[]);
+      } catch {
+        setResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 250);
 
-  const handleCreateProject = () => {
-    router.push('/projects/new');
-  };
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
+  const open = (projectId: number) => router.push(`/projects/${projectId}`);
 
   if (isLoading) {
     return (
-      <div className="rounded border border-slate-200 bg-white/85 px-6 py-16 text-center text-sm text-slate-500 shadow-[0_22px_55px_rgba(15,23,42,0.08)]">
-        Loading projects...
+      <div className="glass-panel rounded px-6 py-16 text-center text-sm text-slate-500">
+        Loading projects…
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="hero-panel flex flex-col gap-4 rounded p-6 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="eyebrow text-sky-600">Project library</p>
-          <h2 className="app-title mt-2 text-3xl font-semibold text-slate-950">Projects</h2>
-          <p className="mt-2 max-w-2xl text-sm text-slate-600">Manage delivery spaces, track ownership, and move from planning into execution with less UI friction.</p>
-        </div>
-        <button
-          onClick={handleCreateProject}
-          className="button-primary inline-flex items-center justify-center rounded-sm px-4 py-3 text-sm font-semibold text-white"
-        >
-          <PlusIcon className="mr-2 h-5 w-5" />
-          Create Project
-        </button>
+    <div className="space-y-5">
+      {/* The shell already renders the page title and the New project action. */}
+      <p className="max-w-3xl text-sm text-slate-600">
+        The projects you lead, hold a role in, or have work assigned in. Search to find any other project in the
+        organisation.
+      </p>
+
+      <div className="glass-panel rounded p-4">
+        <label className="relative block">
+          <span className="sr-only">Search all projects</span>
+          <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search all projects by key or name"
+            className="h-9 w-full rounded-sm pl-8 pr-3 text-sm"
+          />
+        </label>
+        {query.trim().length === 1 ? (
+          <p className="mt-2 text-xs text-slate-500">Keep typing to search.</p>
+        ) : null}
       </div>
 
-      <div>
+      {error ? (
+        <div className="rounded-sm border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
+      ) : null}
+
+      {results !== null ? (
+        <section>
+          <h3 className="mb-2 text-sm font-semibold text-slate-900">
+            Search results {isSearching ? <span className="font-normal text-slate-500">· searching…</span> : null}
+          </h3>
+          {results.length === 0 && !isSearching ? (
+            <div className="glass-panel rounded px-5 py-10 text-center text-sm text-slate-500">
+              No project matches “{query.trim()}”.
+            </div>
+          ) : (
+            <ul className="glass-panel divide-y divide-slate-200 rounded">
+              {results.map((result) => (
+                <li key={result.project_id} className="flex items-center gap-3 px-4 py-3">
+                  <span className="ado-pill shrink-0">{result.project_key}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-900">{result.name}</p>
+                    {result.description ? (
+                      <p className="truncate text-xs text-slate-500">{result.description}</p>
+                    ) : null}
+                  </div>
+                  {result.is_member ? (
+                    <button onClick={() => open(result.project_id)} className="button-secondary h-7 px-2.5 text-xs">
+                      Open
+                    </button>
+                  ) : (
+                    <span
+                      className="text-xs text-slate-500"
+                      title="You have no role in this project and no work assigned in it."
+                    >
+                      Not a member
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ) : null}
+
+      <section>
+        <h3 className="mb-2 text-sm font-semibold text-slate-900">Your projects</h3>
         {projects.length === 0 ? (
-          <div className="glass-panel rounded border border-dashed border-slate-300 p-10 text-center">
-            <h3 className="text-lg font-medium text-slate-900 mb-2">No projects yet</h3>
-            <p className="text-slate-500 mb-6">
-              Get started by creating your first project.
+          <div className="glass-panel rounded border-dashed p-10 text-center">
+            <h4 className="text-base font-semibold text-slate-900">No projects assigned to you</h4>
+            <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
+              A project shows up here once you lead it, are given a role in it, or have an issue assigned to you in
+              it. Use the search above to find an existing project, or create your own.
             </p>
             <button
-              onClick={handleCreateProject}
-              className="button-primary inline-flex items-center rounded-sm px-4 py-3 text-sm font-semibold text-white"
+              onClick={() => router.push('/projects/new')}
+              className="button-primary mt-5 inline-flex h-8 items-center px-3 text-[13px]"
             >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Create Project
+              <PlusIcon className="mr-1.5 h-4 w-4" />
+              New project
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
-              <div
+              <button
                 key={project.project_id}
-                className="interactive-card glass-panel cursor-pointer rounded"
-                onClick={() => handleProjectClick(project.project_id)}
+                onClick={() => open(project.project_id)}
+                className="interactive-card glass-panel rounded p-4 text-left"
               >
-                <div className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
-                          {project.project_key}
-                        </span>
-                        {project.is_archived && (
-                          <span className="px-2 py-0.5 text-xs font-medium rounded bg-slate-100 text-slate-700">
-                            Archived
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="mt-3 text-lg font-semibold text-slate-950">
-                        {project.name}
-                      </h3>
-                    </div>
-                    <button className="rounded-sm p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
-                      <PencilIcon className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  {project.description && (
-                    <p className="mt-3 text-sm leading-6 text-slate-600 line-clamp-2">
-                      {project.description}
-                    </p>
-                  )}
-
-                  <div className="mt-5 flex items-center justify-between border-t border-slate-200/80 pt-4">
-                    <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                      Created: {new Date(project.created_at).toLocaleDateString()}
-                    </span>
-                    <span className="inline-flex items-center text-sm font-medium text-sky-700 hover:text-sky-600">
-                      View boards
-                      <ArrowRightIcon className="ml-1 h-4 w-4" />
-                    </span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="ado-pill">{project.project_key}</span>
+                  {project.is_archived ? <span className="ado-pill">Archived</span> : null}
                 </div>
-              </div>
+                <h4 className="mt-2.5 text-sm font-semibold text-slate-950">{project.name}</h4>
+                {project.description ? (
+                  <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-slate-600">{project.description}</p>
+                ) : null}
+                <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-3">
+                  <span className="text-xs text-slate-500">
+                    Created {new Date(project.created_at).toLocaleDateString()}
+                  </span>
+                  <span className="inline-flex items-center text-xs font-medium text-sky-700">
+                    Open
+                    <ArrowRightIcon className="ml-1 h-3.5 w-3.5" />
+                  </span>
+                </div>
+              </button>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

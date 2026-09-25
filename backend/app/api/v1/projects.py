@@ -1,12 +1,14 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
+from app.api.v1.access_control import require_project_access
 from app.api.v1.dependencies import get_current_user
 from app.database import get_db
 from app.models import Issue, Project, User
+from app.services.permission_service import check_project_access, visible_project_ids
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -56,7 +58,58 @@ def read_projects(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return crud.project.get_multi(db, skip=skip, limit=limit)
+    """Projects this user actually belongs to.
+
+    A project appears here when the user leads it, holds a role in it, or has an
+    issue in it assigned to or reported by them. Everything else is reachable
+    only through ``/projects/search``.
+    """
+    allowed = visible_project_ids(db, current_user)
+    if not allowed:
+        return []
+    return (
+        db.query(Project)
+        .filter(Project.project_id.in_(allowed))
+        .order_by(Project.project_key)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+
+@router.get("/search")
+def search_projects(
+    q: str = Query(min_length=1, max_length=200),
+    limit: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> List[dict]:
+    """Find projects by key or name, including ones the user is not part of.
+
+    Searching is the deliberate act that surfaces a project nobody assigned you
+    to. Results say whether the user is a member: a non-member gets the project's
+    identity so they can request access, not its contents.
+    """
+    term = f"%{q.strip()}%"
+    allowed = visible_project_ids(db, current_user)
+    projects = (
+        db.query(Project)
+        .filter((Project.project_key.ilike(term)) | (Project.name.ilike(term)))
+        .order_by(Project.project_key)
+        .limit(limit)
+        .all()
+    )
+    return [
+        {
+            "project_id": project.project_id,
+            "project_key": project.project_key,
+            "name": project.name,
+            "description": project.description if project.project_id in allowed else None,
+            "lead_user_id": project.lead_user_id,
+            "is_member": project.project_id in allowed,
+        }
+        for project in projects
+    ]
 
 
 @router.get("/{project_id}", response_model=schemas.ProjectResponse)
@@ -64,6 +117,7 @@ def read_project(project_id: int, db: Session = Depends(get_db), current_user: U
     db_project = crud.project.get(db, project_id)
     if db_project is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_access(db, current_user, project_id)
     return db_project
 
 
@@ -94,6 +148,7 @@ def read_project_issues(
     db_project = crud.project.get(db, project_id)
     if db_project is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_access(db, current_user, project_id)
     from app.api.v1.issues import serialize_issue
 
     issues = crud.issue.get_by_project(
@@ -113,6 +168,7 @@ def read_project_stats(project_id: int, db: Session = Depends(get_db), current_u
     db_project = crud.project.get(db, project_id)
     if db_project is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_access(db, current_user, project_id)
 
     issues = db.query(Issue).filter(Issue.project_id == project_id).all()
     total_issues = len(issues)

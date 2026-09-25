@@ -39,6 +39,7 @@ export interface Issue {
   status: Status;
   assignee_user_id?: number;
   assignee_name?: string;
+  assignee_display_name?: string;
   assignee_username?: string;
   assignee_avatar?: string;
   reporter_username: string;
